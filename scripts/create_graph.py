@@ -81,7 +81,7 @@ def create_radial_graph(radial=4, length=50):
             x=length * np.cos(i * 2 * np.pi / radial),
             y=length * np.sin(i * 2 * np.pi / radial),
         )
-        pos = coord_node(G, i + 1)
+        pos = get_node_coord(G, i + 1)
         G.add_edge(0, i + 1, geometry=shapely.LineString([(0, 0), pos]), osmid=count)
         count += 1
         # Add edge in both directions
@@ -97,7 +97,7 @@ def make_true_zero(vec):
     """Round to zero when values are very close to zero in a list."""
     return [round(val) if math.isclose(val, 0, abs_tol=1e-10) else val for val in vec]
 
-def coord_node(G, n):
+def get_node_coord(G, n):
     """Return the coordinates of the node."""
     return [G.nodes[n]["x"], G.nodes[n]["y"]]
 
@@ -113,9 +113,11 @@ def find_angle(vec):
     if normvec[1] >= 0:
         return np.arccos(normvec[0])
     elif normvec[0] >= 0:
-        return np.arcsin(normvec[1])
+        angle = np.arcsin(normvec[1])
+        if angle < 0:
+            angle += 2 * np.pi
+        return angle
     else:
-        # TODO: FIX IT
         return np.arccos(normvec[0]) + np.pi / 2
 
 
@@ -157,8 +159,11 @@ def create_concentric_graph(radial=8, zones=3, radius=30, center=True):
     count = 0
     # If there is a center node, shift the ID of the nodes in the zones by 1.
     startnum = 0
+    # And shift the modulo parameter to link last node to first node of a zone
+    mod = radial - 1
     if center is True:
         startnum += 1
+        mod = 0
         for i in range(radial):
             pos = [G.nodes[i + 1]["x"], G.nodes[i + 1]["y"]]
             G.add_edge(0, i, geometry=shapely.LineString([(0, 0), pos]), osmid=count)
@@ -167,30 +172,35 @@ def create_concentric_graph(radial=8, zones=3, radius=30, center=True):
             G.add_edge(i, 0, geometry=shapely.LineString([pos, (0, 0)]), osmid=count)
             count += 1
     for i in range(zones):
-        for j in range(startnum, startnum + radial - 1):
+        for j in range(startnum, startnum + radial):
             fn = i * radial + j
             sn = i * radial + j + 1
-            fc = coord_node(G, fn)
-            sc = coord_node(G, sn)
+            # At last node of a zone, link to first node
+            offset = 0
+            if j%radial == mod:
+                sn -= radial
+                offset += 2 * np.pi
+            fc = get_node_coord(G, fn)
+            sc = get_node_coord(G, sn)
             # Add edge in both directions
             G.add_edge(
                 fn,
                 sn,
-                geometry=create_curved_linestring(fc, sc, radius * (i + 1)),
+                geometry=create_curved_linestring(fc, sc, radius * (i + 1), offset=offset),
                 osmid=count,
             )
             count += 1
             G.add_edge(
                 sn,
                 fn,
-                geometry=create_curved_linestring(sc, fc, radius * (i + 1)),
+                geometry=create_curved_linestring(sc, fc, radius * (i + 1), offset=offset),
                 osmid=count,
             )
             count += 1
             # Connect nodes to next zone if there is one
             if i < zones - 1:
                 tn = (i + 1) * radial + j
-                tc = coord_node(G, tn)
+                tc = get_node_coord(G, tn)
                 G.add_edge(fn, tn, geometry=shapely.LineString([fc, tc]), osmid=count)
                 count += 1
                 # Add edge in both directions
@@ -203,17 +213,39 @@ def create_concentric_graph(radial=8, zones=3, radius=30, center=True):
 
 
 # Simpler but less general function in the meantime
-def create_curved_linestring(startpoint, endpoint, radius):
+def create_curved_linestring(startpoint, endpoint, radius, offset=0):
+    """Create a curved linestring between the two selected points.
+
+    The curvature is given by the radius. The two points are supposed to be on a circle of the given radius. The offset allows to change the endpoint angle, to avoid issues of negative values and periodicity.
+
+    Args:
+        startpoint (array-like): coordinates of the first point
+        endpoint (array-like): coordinates of the second point
+        radius (int or float): radius of the circle on which the points are.
+        offset (int, optional): Added angle in radian to the endpoint angle. Defaults to 0.
+
+    Raises:
+        ValueError: The radius needs to be at least as long as the Euclidean distance between the points.
+
+    Returns:
+        shapely.LineString : A geometric curved line between the two points.
+    """
+    if np.linalg.norm([startpoint, endpoint]) > 2 * radius:
+        if math.isclose(np.linalg.norm([startpoint, endpoint]), radius):
+            warnings.warn("Given radius is very close to the minimum value")
+        else:
+            raise ValueError(
+                "Radius needs to be larger than the Euclidean distance between the points."
+            )
     N = 100
-    coords = [startpoint]
+    coords = []
     start_angle = find_angle(startpoint)
-    end_angle = find_angle(endpoint)
-    angle_coords = np.linspace(start_angle, end_angle, num=N - 1, endpoint=False)
-    for i in range(1, N - 1):
+    end_angle = find_angle(endpoint) + offset
+    angle_coords = np.linspace(start_angle, end_angle, num=N)
+    for i in range(N):
         coords.append(
             [radius * np.cos(angle_coords[i]), radius * np.sin(angle_coords[i])]
         )
-    coords.append(endpoint)
     return shapely.LineString(coords)
 
 
@@ -239,7 +271,7 @@ def WIP_create_curved_linestring(
     Returns:
         curve (shapely.LineString): Curved linestring between the two points.
     """
-    if np.linalg.norm([startpoint, endpoint]) > radius:
+    if np.linalg.norm([startpoint, endpoint]) > 2 * radius:
         raise ValueError(
             "Radius needs to be larger than the Euclidean distance between the points."
         )
