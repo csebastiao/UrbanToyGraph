@@ -1,10 +1,12 @@
 """Script to create networkx graphs and save them."""
 
+import math
+import random
 import warnings
 
 import networkx as nx
 import numpy as np
-import math
+import osmnx as ox
 import shapely
 
 
@@ -46,6 +48,9 @@ def create_grid_graph(m=3, n=3, width=50, height=None):
             G.edges[(first, second, 0)]["geometry"] = shapely.LineString(
                 [(fx * width, fy * height), (sx * width, sy * height)]
             )
+            G.edges[(first, second, 0)]["length"] = G.edges[(first, second, 0)][
+                "geometry"
+            ].length
             # Added to make it osmnx-compatible
             G.edges[(first, second, 0)]["osmid"] = count
     # To make easier node labels
@@ -64,13 +69,13 @@ def create_radial_graph(radial=4, length=50):
         length (int, optional): Lengths of the roads. Defaults to 50.
 
     Raises:
-        ValueError: Radial graph needs at least 2 radial roads to work.
+        ValueError: Radial graph needs at least 3 radial roads to work.
 
     Returns:
         G (networkx.MultiDiGraph): Radial graph.
     """
-    if radial < 2:
-        raise ValueError("Radial graph needs at least 2 radial roads to work.")
+    if radial < 3:
+        raise ValueError("Radial graph needs at least 3 radial roads to work.")
     G = nx.MultiDiGraph()
     G.add_node(0, x=0, y=0)
     count = 0
@@ -83,9 +88,11 @@ def create_radial_graph(radial=4, length=50):
         )
         pos = get_node_coord(G, i + 1)
         G.add_edge(0, i + 1, geometry=shapely.LineString([(0, 0), pos]), osmid=count)
+        G.edges[(0, i + 1, 0)]["length"] = G.edges[(0, i + 1, 0)]["geometry"].length
         count += 1
         # Add edge in both directions
         G.add_edge(i + 1, 0, geometry=shapely.LineString([pos, (0, 0)]), osmid=count)
+        G.edges[(i + 1, 0, 0)]["length"] = G.edges[(i + 1, 0, 0)]["geometry"].length
         count += 1
     # Added to make it osmnx-compatible
     G.graph["crs"] = "epsg:2154"
@@ -96,6 +103,7 @@ def create_radial_graph(radial=4, length=50):
 def make_true_zero(vec):
     """Round to zero when values are very close to zero in a list."""
     return [round(val) if math.isclose(val, 0, abs_tol=1e-10) else val for val in vec]
+
 
 def get_node_coord(G, n):
     """Return the coordinates of the node."""
@@ -157,7 +165,7 @@ def create_concentric_graph(radial=8, zones=3, radius=30, center=True):
             )
             count += 1
     count = 0
-    # If there is a center node, shift the ID of the nodes in the zones by 1.
+    # If there is a center node, shift the ID of the nodes in the zones by 1
     startnum = 0
     # And shift the modulo parameter to link last node to first node of a zone
     mod = radial - 1
@@ -167,9 +175,11 @@ def create_concentric_graph(radial=8, zones=3, radius=30, center=True):
         for i in range(radial):
             pos = [G.nodes[i + 1]["x"], G.nodes[i + 1]["y"]]
             G.add_edge(0, i, geometry=shapely.LineString([(0, 0), pos]), osmid=count)
+            G.edges[(0, i, 0)]["length"] = G.edges[(0, i, 0)]["geometry"].length
             count += 1
             # Add edge in both directions
             G.add_edge(i, 0, geometry=shapely.LineString([pos, (0, 0)]), osmid=count)
+            G.edges[(i, 0, 0)]["length"] = G.edges[(i, 0, 0)]["geometry"].length
             count += 1
     for i in range(zones):
         for j in range(startnum, startnum + radial):
@@ -177,25 +187,29 @@ def create_concentric_graph(radial=8, zones=3, radius=30, center=True):
             sn = i * radial + j + 1
             # At last node of a zone, link to first node
             offset = 0
-            if j%radial == mod:
+            if j % radial == mod:
                 sn -= radial
                 offset += 2 * np.pi
             fc = get_node_coord(G, fn)
             sc = get_node_coord(G, sn)
             # Add edge in both directions
+            geom = create_curved_linestring(fc, sc, radius * (i + 1), offset=offset)
             G.add_edge(
                 fn,
                 sn,
-                geometry=create_curved_linestring(fc, sc, radius * (i + 1), offset=offset),
+                geometry=geom,
                 osmid=count,
             )
+            G.edges[(fn, sn, 0)]["length"] = G.edges[(fn, sn, 0)]["geometry"].length
             count += 1
+            # Use reverse geometry to get the exact same geometry and avoid small computational differences
             G.add_edge(
                 sn,
                 fn,
-                geometry=create_curved_linestring(sc, fc, radius * (i + 1), offset=offset),
+                geometry=geom.reverse(),
                 osmid=count,
             )
+            G.edges[(sn, fn, 0)]["length"] = G.edges[(sn, fn, 0)]["geometry"].length
             count += 1
             # Connect nodes to next zone if there is one
             if i < zones - 1:
@@ -281,6 +295,53 @@ def WIP_create_curved_linestring(
     curve = shapely.LineString(coords)
     return curve
 
-# TODO: Function to randomly remove a number of edges, while keeping the network connected. To break the perfection of the toy graphs.
-def remove_random_edges(G, N=1, prevent_disconnect=True):
+
+# TODO: Needs debugging, sometimes not removing enough edges somehow
+def remove_random_edges(G, N=1, prevent_disconnect=True, is_directed=True):
+    """Remove random edges from a graph.
+
+    Args:
+        G (neworkx.MultiDiGraph): Graph on which we want to remove edges.
+        N (int, optional): Number of edges we want to remove. Defaults to 1.
+        prevent_disconnect (bool, optional): If True, will keep the network as connected as it was initially. Defaults to True.
+        is_directed (bool, optional): Need to be True if the graph is directed. Defaults to True.
+
+    Raises:
+        ValueError: N is too large for the graph, pick a smaller N. Need to keep the minimal number of edges for a tree so N - 1, N being the number of nodes.
+        ValueError: N is too large for the graph, pick a smaller N. Need to keep the minimal number of edges to have no node without edges so N // 2 + 1.
+
+    Returns:
+        G (networkx.MultiDiGraph): Graph with edges removed.
+    """
+    removed = 0
+    # Make it undirected to avoid needing to remove two edges and to use the nx.number_connected_components function
+    if is_directed is True:
+        G = ox.get_undirected(G)
+    edgelist = list(G.edges)
+    if prevent_disconnect is True:
+        if len(G) - 1 > len(edgelist) - N:
+            raise ValueError("N is too large for the graph, pick a smaller N")
+    else:
+        if len(G) // 2 + 1 > len(edgelist) - N:
+            raise ValueError("N is too large for the graph, pick a smaller N")
+    # Test random edges and see if they are a valid choice
+    while removed < N:
+        valid = True
+        tested = random.choice(edgelist)
+        # Wrong choice if node of degree 1
+        for node in tested[:2]:
+            if G.degree(node) == 1:
+                valid = False
+        H = G.copy()
+        H.remove_edge(*tested)
+        # Wrong choice if creating an additional component
+        if prevent_disconnect is True:
+            if nx.number_connected_components(H) > nx.number_connected_components(G):
+                valid = False
+        if valid is True:
+            G.remove_edge(*tested)
+            edgelist = list(G.edges)
+            removed += 1
+    if is_directed is True:
+        G = nx.MultiDiGraph(G)
     return G
