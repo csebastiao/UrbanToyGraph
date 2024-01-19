@@ -8,7 +8,7 @@ import shapely
 
 
 def create_grid_graph(m=3, n=3, width=50, height=None):
-    """Make a grid-like graph.
+    """Create a grid graph of arbitrary size.
 
     Args:
         m (int, optional): Number or columns. Defaults to 3.
@@ -55,13 +55,59 @@ def create_grid_graph(m=3, n=3, width=50, height=None):
     return G
 
 
-def create_concentric_graph(radial=8, zones=3, radius=30):
+def create_radial_graph(radial=4, length=50):
+    """Create a radial graph where roads are radiating from a center.
+
+    Args:
+        radial (int, optional): Number of roads arranged evenly around the center. Needs to be at least 2. Defaults to 4.
+        length (int, optional): Lengths of the roads. Defaults to 50.
+
+    Raises:
+        ValueError: Radial graph needs at least 2 radial roads to work.
+
+    Returns:
+        G (networkx.MultiDiGraph): Radial graph.
+    """
+    if radial < 2:
+        raise ValueError("Radial graph needs at least 2 radial roads to work.")
+    G = nx.MultiDiGraph()
+    G.add_node(
+        0,
+        x=0,
+        y=0
+    )
+    count = 0
+    # Nodes are evenly distributed on a circle
+    for i in range(radial):
+        G.add_node(
+            i + 1,
+            x=length * np.cos(i * 2 * np.pi / radial),
+            y=length * np.sin(i * 2 * np.pi / radial),
+        )
+        pos = [G.nodes[i+1]["x"], G.nodes[i+1]["y"]]
+        G.add_edge(
+            0, i+1, geometry=shapely.LineString([(0, 0), pos]), osmid=count
+        )
+        count += 1
+        # Add edge in both directions
+        G.add_edge(
+            i+1, 0, geometry=shapely.LineString([pos, (0, 0)]), osmid=count
+        )
+        count += 1
+    # Added to make it osmnx-compatible
+    G.graph["crs"] = "epsg:2154"
+    G.graph["simplified"] = True
+    return G
+
+
+def create_concentric_graph(radial=8, zones=3, radius=30, center=True):
     """Create a concentric graph, where nodes are on circular zones, connected to their nearest neighbors and to the next zone.
 
     Args:
-        radial (int, optional): Number of nodes per zone. Nodes are evenly distributed on each circle. Defaults to 8.
-        zones (int, optional): Number of zones. Defaults to 3.
+        radial (int, optional): Number of nodes per zone. Nodes are evenly distributed on each circle. Needs to be at least 2. Defaults to 8.
+        zones (int, optional): Number of zones. Needs to be at least 1. Defaults to 3.
         radius (int, optional): Radius between zones. Defaults to 30.
+        center (bool, optional): If True, add a node at the center of the graph.
 
     Raises:
         ValueError: Needs two node per zone at least.
@@ -71,11 +117,18 @@ def create_concentric_graph(radial=8, zones=3, radius=30):
         G (networkx.MultiDiGraph): Concentric graph.
     """
     if radial < 2:
-        raise ValueError("Concentric graph needs at least 2 radial to work.")
+        raise ValueError("Concentric graph needs at least 2 radial positions to work.")
     if zones < 1:
         raise ValueError("Number of zones needs to be positive.")
     G = nx.MultiDiGraph()
     count = 0
+    if center is True:
+        G.add_node(
+            count,
+            x=0,
+            y=0
+        )
+        count += 1
     # Zones increase the radius
     for i in range(zones):
         # Nodes are evenly distributed on a circle
@@ -87,8 +140,25 @@ def create_concentric_graph(radial=8, zones=3, radius=30):
             )
             count += 1
     count = 0
+    # If there is a center node, shift the ID of the nodes in the zones by 1.
+    startnum = 0
+    endnum = radial - 1
+    if center is True:
+        startnum += 1
+        endnum += 1
+        for i in range(radial):
+            pos = [G.nodes[i+1]["x"], G.nodes[i+1]["y"]]
+            G.add_edge(
+                0, i, geometry=shapely.LineString([(0, 0), pos], osmid=count)
+            )
+            count += 1
+            # Add edge in both directions
+            G.add_edge(
+                i, 0, geometry=shapely.LineString([pos, (0, 0)], osmid=count)
+            )
+            count += 1
     for c, i in enumerate(range(zones)):
-        for j in range(radial - 1):
+        for j in range(startnum, radial - 1):
             fn = i * radial + j
             sn = i * radial + j + 1
             fc = [G.nodes[fn]["x"], G.nodes[fn]["y"]]
@@ -108,6 +178,7 @@ def create_concentric_graph(radial=8, zones=3, radius=30):
                 tc = [G.nodes[tn]["x"], G.nodes[tn]["y"]]
                 G.add_edge(fn, tn, geometry=shapely.LineString([fc, tc]), osmid=count)
                 count += 1
+                # Add edge in both directions
                 G.add_edge(tn, fn, geometry=shapely.LineString([tc, fc]), osmid=count)
                 count += 1
     # Added to make it osmnx-compatible
