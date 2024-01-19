@@ -9,6 +9,8 @@ import numpy as np
 import osmnx as ox
 import shapely
 
+from . import utils
+
 
 def create_grid_graph(m=3, n=3, width=50, height=None):
     """Create a grid graph of arbitrary size.
@@ -86,7 +88,7 @@ def create_radial_graph(radial=4, length=50):
             x=length * np.cos(i * 2 * np.pi / radial),
             y=length * np.sin(i * 2 * np.pi / radial),
         )
-        pos = get_node_coord(G, i + 1)
+        pos = utils.get_node_coord(G, i + 1)
         G.add_edge(0, i + 1, geometry=shapely.LineString([(0, 0), pos]), osmid=count)
         G.edges[(0, i + 1, 0)]["length"] = G.edges[(0, i + 1, 0)]["geometry"].length
         count += 1
@@ -98,35 +100,6 @@ def create_radial_graph(radial=4, length=50):
     G.graph["crs"] = "epsg:2154"
     G.graph["simplified"] = True
     return G
-
-
-def make_true_zero(vec):
-    """Round to zero when values are very close to zero in a list."""
-    return [round(val) if math.isclose(val, 0, abs_tol=1e-10) else val for val in vec]
-
-
-def get_node_coord(G, n):
-    """Return the coordinates of the node."""
-    return [G.nodes[n]["x"], G.nodes[n]["y"]]
-
-
-def normalize(vec):
-    """Normalize the vector."""
-    return vec / np.linalg.norm(vec)
-
-
-def find_angle(vec):
-    """Find the angle of the vector to the origin and the horizontal axis."""
-    normvec = make_true_zero(normalize(vec))
-    if normvec[1] >= 0:
-        return np.arccos(normvec[0])
-    elif normvec[0] >= 0:
-        angle = np.arcsin(normvec[1])
-        if angle < 0:
-            angle += 2 * np.pi
-        return angle
-    else:
-        return np.arccos(normvec[0]) + np.pi / 2
 
 
 def create_concentric_graph(radial=8, zones=3, radius=30, center=True):
@@ -190,8 +163,8 @@ def create_concentric_graph(radial=8, zones=3, radius=30, center=True):
             if j % radial == mod:
                 sn -= radial
                 offset += 2 * np.pi
-            fc = get_node_coord(G, fn)
-            sc = get_node_coord(G, sn)
+            fc = utils.get_node_coord(G, fn)
+            sc = utils.get_node_coord(G, sn)
             # Add edge in both directions
             geom = create_curved_linestring(fc, sc, radius * (i + 1), offset=offset)
             G.add_edge(
@@ -214,7 +187,7 @@ def create_concentric_graph(radial=8, zones=3, radius=30, center=True):
             # Connect nodes to next zone if there is one
             if i < zones - 1:
                 tn = (i + 1) * radial + j
-                tc = get_node_coord(G, tn)
+                tc = utils.get_node_coord(G, tn)
                 G.add_edge(fn, tn, geometry=shapely.LineString([fc, tc]), osmid=count)
                 count += 1
                 # Add edge in both directions
@@ -253,8 +226,8 @@ def create_curved_linestring(startpoint, endpoint, radius, offset=0):
             )
     N = 100
     coords = []
-    start_angle = find_angle(startpoint)
-    end_angle = find_angle(endpoint) + offset
+    start_angle = utils.find_angle(startpoint)
+    end_angle = utils.find_angle(endpoint) + offset
     angle_coords = np.linspace(start_angle, end_angle, num=N)
     for i in range(N):
         coords.append(
@@ -314,6 +287,8 @@ def remove_random_edges(G, N=1, prevent_disconnect=True, is_directed=True):
         G (networkx.MultiDiGraph): Graph with edges removed.
     """
     removed = 0
+    # Avoid mutate original graph
+    G = G.copy()
     # Make it undirected to avoid needing to remove two edges and to use the nx.number_connected_components function
     if is_directed is True:
         G = ox.get_undirected(G)
@@ -332,6 +307,7 @@ def remove_random_edges(G, N=1, prevent_disconnect=True, is_directed=True):
         for node in tested[:2]:
             if G.degree(node) == 1:
                 valid = False
+        # Create copy to test removal
         H = G.copy()
         H.remove_edge(*tested)
         # Wrong choice if creating an additional component
