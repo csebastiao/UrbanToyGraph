@@ -4,6 +4,7 @@ import warnings
 
 import networkx as nx
 import numpy as np
+import math
 import shapely
 
 
@@ -71,11 +72,7 @@ def create_radial_graph(radial=4, length=50):
     if radial < 2:
         raise ValueError("Radial graph needs at least 2 radial roads to work.")
     G = nx.MultiDiGraph()
-    G.add_node(
-        0,
-        x=0,
-        y=0
-    )
+    G.add_node(0, x=0, y=0)
     count = 0
     # Nodes are evenly distributed on a circle
     for i in range(radial):
@@ -84,20 +81,42 @@ def create_radial_graph(radial=4, length=50):
             x=length * np.cos(i * 2 * np.pi / radial),
             y=length * np.sin(i * 2 * np.pi / radial),
         )
-        pos = [G.nodes[i+1]["x"], G.nodes[i+1]["y"]]
-        G.add_edge(
-            0, i+1, geometry=shapely.LineString([(0, 0), pos]), osmid=count
-        )
+        pos = coord_node(G, i + 1)
+        G.add_edge(0, i + 1, geometry=shapely.LineString([(0, 0), pos]), osmid=count)
         count += 1
         # Add edge in both directions
-        G.add_edge(
-            i+1, 0, geometry=shapely.LineString([pos, (0, 0)]), osmid=count
-        )
+        G.add_edge(i + 1, 0, geometry=shapely.LineString([pos, (0, 0)]), osmid=count)
         count += 1
     # Added to make it osmnx-compatible
     G.graph["crs"] = "epsg:2154"
     G.graph["simplified"] = True
     return G
+
+
+def make_true_zero(vec):
+    """Round to zero when values are very close to zero in a list."""
+    return [round(val) if math.isclose(val, 0, abs_tol=1e-10) else val for val in vec]
+
+def coord_node(G, n):
+    """Return the coordinates of the node."""
+    return [G.nodes[n]["x"], G.nodes[n]["y"]]
+
+
+def normalize(vec):
+    """Normalize the vector."""
+    return vec / np.linalg.norm(vec)
+
+
+def find_angle(vec):
+    """Find the angle of the vector to the origin and the horizontal axis."""
+    normvec = make_true_zero(normalize(vec))
+    if normvec[1] >= 0:
+        return np.arccos(normvec[0])
+    elif normvec[0] >= 0:
+        return np.arcsin(normvec[1])
+    else:
+        # TODO: FIX IT
+        return np.arccos(normvec[0]) + np.pi / 2
 
 
 def create_concentric_graph(radial=8, zones=3, radius=30, center=True):
@@ -123,11 +142,7 @@ def create_concentric_graph(radial=8, zones=3, radius=30, center=True):
     G = nx.MultiDiGraph()
     count = 0
     if center is True:
-        G.add_node(
-            count,
-            x=0,
-            y=0
-        )
+        G.add_node(count, x=0, y=0)
         count += 1
     # Zones increase the radius
     for i in range(zones):
@@ -142,40 +157,40 @@ def create_concentric_graph(radial=8, zones=3, radius=30, center=True):
     count = 0
     # If there is a center node, shift the ID of the nodes in the zones by 1.
     startnum = 0
-    endnum = radial - 1
     if center is True:
         startnum += 1
-        endnum += 1
         for i in range(radial):
-            pos = [G.nodes[i+1]["x"], G.nodes[i+1]["y"]]
-            G.add_edge(
-                0, i, geometry=shapely.LineString([(0, 0), pos], osmid=count)
-            )
+            pos = [G.nodes[i + 1]["x"], G.nodes[i + 1]["y"]]
+            G.add_edge(0, i, geometry=shapely.LineString([(0, 0), pos]), osmid=count)
             count += 1
             # Add edge in both directions
-            G.add_edge(
-                i, 0, geometry=shapely.LineString([pos, (0, 0)], osmid=count)
-            )
+            G.add_edge(i, 0, geometry=shapely.LineString([pos, (0, 0)]), osmid=count)
             count += 1
-    for c, i in enumerate(range(zones)):
-        for j in range(startnum, radial - 1):
+    for i in range(zones):
+        for j in range(startnum, startnum + radial - 1):
             fn = i * radial + j
             sn = i * radial + j + 1
-            fc = [G.nodes[fn]["x"], G.nodes[fn]["y"]]
-            sc = [G.nodes[sn]["x"], G.nodes[sn]["y"]]
+            fc = coord_node(G, fn)
+            sc = coord_node(G, sn)
             # Add edge in both directions
             G.add_edge(
-                fn, sn, geometry=create_curved_linestring(fc, sc, radius), osmid=count
+                fn,
+                sn,
+                geometry=create_curved_linestring(fc, sc, radius * (i + 1)),
+                osmid=count,
             )
             count += 1
             G.add_edge(
-                sn, fn, geometry=create_curved_linestring(sc, fc, radius), osmid=count
+                sn,
+                fn,
+                geometry=create_curved_linestring(sc, fc, radius * (i + 1)),
+                osmid=count,
             )
             count += 1
             # Connect nodes to next zone if there is one
-            if c < zones - 1:
+            if i < zones - 1:
                 tn = (i + 1) * radial + j
-                tc = [G.nodes[tn]["x"], G.nodes[tn]["y"]]
+                tc = coord_node(G, tn)
                 G.add_edge(fn, tn, geometry=shapely.LineString([fc, tc]), osmid=count)
                 count += 1
                 # Add edge in both directions
@@ -187,7 +202,26 @@ def create_concentric_graph(radial=8, zones=3, radius=30, center=True):
     return G
 
 
-def create_curved_linestring(startpoint, endpoint, radius, side="smaller", n_coord=100):
+# Simpler but less general function in the meantime
+def create_curved_linestring(startpoint, endpoint, radius):
+    N = 100
+    coords = [startpoint]
+    start_angle = find_angle(startpoint)
+    end_angle = find_angle(endpoint)
+    angle_coords = np.linspace(start_angle, end_angle, num=N - 1, endpoint=False)
+    for i in range(1, N - 1):
+        coords.append(
+            [radius * np.cos(angle_coords[i]), radius * np.sin(angle_coords[i])]
+        )
+    coords.append(endpoint)
+    return shapely.LineString(coords)
+
+
+# TODO: Find way to know the coordinates of the n_coord points. Maybe find the center of the circle and draw from here ?
+# Need to be able to specify which side because there are always two center (except if right in the middle) !
+def WIP_create_curved_linestring(
+    startpoint, endpoint, radius, side="smaller", n_coord=100
+):
     """Create a curved linestring between two points.
 
     The function suppose that the startpoint and the endpoint are both on a circle of a given radius and create the corresponding shapely.LineString, with the number of points on the LineString being n_coord.
@@ -211,8 +245,10 @@ def create_curved_linestring(startpoint, endpoint, radius, side="smaller", n_coo
         )
     coords = []
     for i in range(n_coord):
-        # TODO: Find way to know the coordinates of the n_coord points. Maybe find the center of the circle and draw from here ?
-        # Need to be able to specify which side because there are always two center (except if right in the middle) !
         coords.append([i, i])
     curve = shapely.LineString(coords)
     return curve
+
+# TODO: Function to randomly remove a number of edges, while keeping the network connected. To break the perfection of the toy graphs.
+def remove_random_edges(G, N=1, prevent_disconnect=True):
+    return G
