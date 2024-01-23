@@ -33,20 +33,34 @@ def test_concentric():
     assert len(create_concentric_graph(radial=4, zones=2, center=False)) == 8
     assert len(create_concentric_graph(radial=8, zones=5, center=True)) == 41
     assert (
-        len(create_concentric_graph(radial=4, zones=2, center=True, multidigraph=True))
+        len(
+            create_concentric_graph(
+                radial=4, zones=2, center=True, multidigraph=True
+            ).edges
+        )
         == 32
     )
     assert (
-        len(create_concentric_graph(radial=4, zones=2, center=True, multidigraph=False))
+        len(
+            create_concentric_graph(
+                radial=4, zones=2, center=True, multidigraph=False
+            ).edges
+        )
         == 16
     )
     assert (
-        len(create_concentric_graph(radial=4, zones=2, center=False, multidigraph=True))
+        len(
+            create_concentric_graph(
+                radial=4, zones=2, center=False, multidigraph=True
+            ).edges
+        )
         == 24
     )
     assert (
         len(
-            create_concentric_graph(radial=4, zones=2, center=False, multidigraph=False)
+            create_concentric_graph(
+                radial=4, zones=2, center=False, multidigraph=False
+            ).edges
         )
         == 12
     )
