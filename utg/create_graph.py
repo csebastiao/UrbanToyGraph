@@ -145,8 +145,8 @@ def create_concentric_graph(
     if center:
         startnum += 1
         mod = 0
-        for i in range(radial):
-            pos = [G.nodes[i + 1]["x"], G.nodes[i + 1]["y"]]
+        for i in range(1, radial + 1):
+            pos = [G.nodes[i]["x"], G.nodes[i]["y"]]
             G.add_edge(0, i, geometry=shapely.LineString([(0, 0), pos]), osmid=count)
             G.edges[(0, i)]["length"] = G.edges[(0, i)]["geometry"].length
             count += 1
@@ -315,4 +315,20 @@ def remove_random_edges(
             removed += 1
     if is_directed:
         G = nx.MultiDiGraph(G)
+    return G
+
+
+def save_graph(G, filepath):
+    """Save the graph in the corresponding filepath, converting geometry to WKT string."""
+    G = G.copy()
+    for e in G.edges:
+        G.edges[e]["geometry"] = shapely.to_wkt(G.edges[e]["geometry"])
+    nx.write_graphml(G, filepath)
+
+
+def load_graph(filepath):
+    """Load the graph from the corresponding filepath, creating geometry from WKT string."""
+    G = nx.read_graphml(filepath)
+    for e in G.edges:
+        G.edges[e]["geometry"] = shapely.from_wkt_wkt(G.edges[e]["geometry"])
     return G

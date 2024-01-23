@@ -3,5 +3,24 @@
 from utg import create_graph as cg
 
 if __name__ == "__main__":
-    small_square = cg.create_grid_graph(m=3, n=3, width=50, height=100)
-    print(small_square.edges[0, 3, 0]["length"])
+    graphname = "concentric_small"
+    G = cg.create_concentric_graph(radial=4, zones=2)
+    cg.save_graph(G, "./template_graph/" + graphname + ".graphml")
+    graphname = "concentric_large"
+    G = cg.create_concentric_graph(radial=8, zones=5)
+    cg.save_graph(G, "./template_graph/" + graphname + ".graphml")
+    graphname = "cross"
+    G = cg.create_radial_graph()
+    cg.save_graph(G, "./template_graph/" + graphname + ".graphml")
+    graphname = "star"
+    G = cg.create_radial_graph(radial=8)
+    cg.save_graph(G, "./template_graph/" + graphname + ".graphml")
+    graphname = "block"
+    G = cg.create_grid_graph()
+    cg.save_graph(G, "./template_graph/" + graphname + ".graphml")
+    graphname = "multiple_block"
+    G = cg.create_grid_graph(m=9, n=9)
+    cg.save_graph(G, "./template_graph/" + graphname + ".graphml")
+    graphname = "manhattan"
+    G = cg.create_grid_graph(m=24, n=8, width=50, height=100)
+    cg.save_graph(G, "./template_graph/" + graphname + ".graphml")
