@@ -176,6 +176,7 @@ def create_concentric_graph(
                 tn = (i + 1) * radial + j
                 tc = utils.get_node_coord(G, tn)
                 G.add_edge(fn, tn, geometry=shapely.LineString([fc, tc]), osmid=count)
+                G.edges[(fn, tn)]["length"] = G.edges[(fn, tn)]["geometry"].length
                 count += 1
     # Added to make it osmnx-compatible
     G.graph["crs"] = "epsg:2154"

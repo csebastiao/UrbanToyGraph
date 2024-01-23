@@ -1,11 +1,14 @@
+import pytest
+
 from utg.create_graph import (
+    create_concentric_graph,
     create_grid_graph,
     create_radial_graph,
-    create_concentric_graph,
     remove_random_edges,
 )
 
 
+@pytest.mark.filterwarnings("ignore::UserWarning")
 def test_grid():
     assert len(create_grid_graph(m=3, n=3)) == 9
     assert len(create_grid_graph(m=3, n=5)) == 15
