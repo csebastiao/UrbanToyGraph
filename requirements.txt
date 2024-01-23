@@ -1,0 +1,4 @@
+numpy==1.26.3
+networkx==3.2.1
+shapely==2.0.2
+pre-commit
