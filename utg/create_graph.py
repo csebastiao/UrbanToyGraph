@@ -11,15 +11,18 @@ import shapely
 from . import utils
 
 
-def create_grid_graph(m=3, n=3, width=50, height=None, multidigraph=True):
+def create_grid_graph(
+    rows=3, cols=3, width=50, height=None, multidigraph=True, diagonal=False
+):
     """Create a grid graph of arbitrary size.
 
     Args:
-        m (int, optional): Number or columns. Defaults to 3.
-        n (int, optional): Number of rows. Defaults to 3.
+        rows (int, optional): Number or rows. Defaults to 3.
+        cols (int, optional): Number of columns. Defaults to 3.
         width (int or float, optional): Length in the x coordinate. If height is not defined, is the square's length. Defaults to 50.
         height (int or float, optional): If not None, length of the y coordinate. Defaults to None.
         multidigraph (bool, optional): If True, return Graph as MultiDiGraph. Graph is better for computations and ease of use, MultiDiGraph is more general and osmnx-compatible. Defaults to True.
+        diagonal (bool, optional): If True, create diagonal edges along the square. Works only if there is an equal amount of rows and columns. Defaults to False.
 
     Raises:
         ValueError: width needs to be positive.
@@ -27,7 +30,7 @@ def create_grid_graph(m=3, n=3, width=50, height=None, multidigraph=True):
     Returns:
         G (networkx.Graph or networkx.MultiDiGraph): Grid-like graph.
     """
-    G = nx.grid_2d_graph(m, n, create_using=nx.Graph)
+    G = nx.grid_2d_graph(rows, cols, create_using=nx.Graph)
     if width <= 0:
         raise ValueError("Width needs to be positive.")
     if height is None:
@@ -55,6 +58,30 @@ def create_grid_graph(m=3, n=3, width=50, height=None, multidigraph=True):
             G.edges[(first, second)]["osmid"] = c
     # To make easier node labels
     G = nx.convert_node_labels_to_integers(G)
+    count = len(G.edges)
+    if diagonal:
+        if cols == rows:
+            for i in range(rows - 1):
+                first = i * (rows + 1)
+                second = (i + 1) * (rows + 1)
+                G.add_edge(first, second)
+                G.edges[first, second]["geometry"] = shapely.LineString(
+                    [
+                        utils.get_node_coord(
+                            G,
+                            first,
+                        ),
+                        utils.get_node_coord(G, second),
+                    ]
+                )
+                G.edges[first, second]["length"] = G.edges[first, second][
+                    "geometry"
+                ].length
+                G.edges[first, second]["osmid"] = count + i + 1
+        else:
+            warnings.warn(
+                "Diagonal is only possible if the number of rows is the same as the number of colums for now."
+            )
     # Added to make it osmnx-compatible
     G.graph["crs"] = "epsg:2154"
     G.graph["simplified"] = True

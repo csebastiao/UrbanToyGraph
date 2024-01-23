@@ -8,6 +8,7 @@ from utg.create_graph import (
 )
 
 
+# TODO: Test raised warnings and errors
 @pytest.mark.filterwarnings("ignore::UserWarning")
 def test_grid():
     assert len(create_grid_graph(m=3, n=3)) == 9

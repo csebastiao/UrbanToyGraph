@@ -19,8 +19,8 @@ if __name__ == "__main__":
     G = cg.create_grid_graph()
     cg.save_graph(G, "./template_graph/" + graphname + ".graphml")
     graphname = "multiple_block"
-    G = cg.create_grid_graph(m=9, n=9)
+    G = cg.create_grid_graph(rows=9, cols=9)
     cg.save_graph(G, "./template_graph/" + graphname + ".graphml")
     graphname = "manhattan"
-    G = cg.create_grid_graph(m=24, n=8, width=50, height=100)
+    G = cg.create_grid_graph(rows=8, cols=8, width=50, height=300, diagonal=True)
     cg.save_graph(G, "./template_graph/" + graphname + ".graphml")
