@@ -26,6 +26,7 @@ def load_graph(filepath):
 
 
 def plot_graph(G, bb="square", show=True, save=False, filepath=None):
+    """Plot the graph using geopandas plotting function, with the option to save the picture."""
     fig, ax = plt.subplots()
     geom_node = [shapely.Point(get_node_coord(G, node)) for node in G.nodes]
     geom_edge = list(nx.get_edge_attributes(G, "geometry").values())
@@ -52,12 +53,15 @@ def plot_graph(G, bb="square", show=True, save=False, filepath=None):
     if save:
         if filepath is None:
             raise ValueError("If save is True, need to specify a filepath")
-        fig.savefig(filepath)
+        fig.savefig(filepath, dpi=300)
 
 
 def make_true_zero(vec):
     """Round to zero when values are very close to zero in a list."""
-    return [round(val) if math.isclose(val, 0, abs_tol=1e-10) else val for val in vec]
+    return [
+        [round(val) if math.isclose(val, 0, abs_tol=1e-10) else val for val in coord]
+        for coord in vec
+    ]
 
 
 def get_node_coord(G, n):
@@ -73,6 +77,7 @@ def normalize(vec):
 def find_angle(vec):
     """Find the angle of the vector to the origin and the horizontal axis."""
     normvec = make_true_zero(normalize(vec))
+    normvec = np.array(normvec[1]) - np.array(normvec[0])
     if normvec[1] >= 0:
         return np.arccos(normvec[0])
     elif normvec[0] >= 0:

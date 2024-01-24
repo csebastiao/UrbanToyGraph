@@ -143,7 +143,7 @@ def create_concentric_graph(
         ValueError: Needs one zone at least.
 
     Returns:
-        G (networkx.MultiDiGraph): Concentric graph.
+        G (networkx.Graph or networkx.MultiDiGraph): Concentric graph.
     """
     if radial < 2:
         raise ValueError("Concentric graph needs at least 2 radial positions to work.")
@@ -240,8 +240,8 @@ def create_curved_linestring(startpoint, endpoint, radius, offset=0):
             )
     N = 100
     coords = []
-    start_angle = utils.find_angle(startpoint)
-    end_angle = utils.find_angle(endpoint) + offset
+    start_angle = utils.find_angle([[0, 0], startpoint])
+    end_angle = utils.find_angle([[0, 0], endpoint]) + offset
     angle_coords = np.linspace(start_angle, end_angle, num=N)
     for i in range(N):
         coords.append(
@@ -281,6 +281,56 @@ def WIP_create_curved_linestring(
         coords.append([i, i])
     curve = shapely.LineString(coords)
     return curve
+
+
+def create_fractal_graph(branch=4, level=3, inital_length=100, multidigraph=True):
+    """Create a fractal graph, with a repeating number of branch at different levels.
+
+    Args:
+        branch (int, optional): Number of branch. Defaults to 4.
+        level (int, optional): Levels of fractality. Defaults to 3.
+        inital_length (int, optional): Length for the branches the first level of fractality. Defaults to 100.
+        multidigraph (bool, optional): If True, return Graph as MultiDiGraph. Graph is better for computations and ease of use, MultiDiGraph is more general and osmnx-compatible. Defaults to True.
+
+    Returns:
+        G (networkx.Graph or networkx.MultiDiGraph): Fractal graph.
+    """
+    # First level is radial graph
+    G = create_radial_graph(radial=branch, length=inital_length, multidigraph=False)
+    _recursive_fractal_level(
+        G, range(1, branch + 1), inital_length / 2, branch, level - 1
+    )
+    for c, edge in enumerate(G.edges()):
+        G.edges[edge]["osmid"] = c
+    if multidigraph:
+        return nx.MultiDiGraph(G)
+    return G
+
+
+# TODO: Fix, workf for level 2 but not for 3 and after, issue with finding initial angle
+def _recursive_fractal_level(G, nlist, length, branch, level):
+    """Recursive function used in create_fractal_graph to got into the different branches at the different levels."""
+    for n in nlist:
+        vector = list(G.edges(n, data=True))[0][-1]["geometry"].reverse().coords[:]
+        new_center = vector[0]
+        initial_angle = utils.find_angle(vector) - 2 * np.pi
+        count = len(G)
+        new_nlist = []
+        for i in range(1, branch):
+            G.add_node(
+                count,
+                x=new_center[0]
+                + length * np.cos(initial_angle + i * 2 * np.pi / branch),
+                y=new_center[1]
+                + length * np.sin(initial_angle + i * 2 * np.pi / branch),
+            )
+            new_nlist.append(count)
+            pos = utils.get_node_coord(G, count)
+            G.add_edge(n, count, geometry=shapely.LineString([new_center, pos]))
+            G.edges[(n, count)]["length"] = G.edges[(n, count)]["geometry"].length
+            count += 1
+        if level > 1:
+            _recursive_fractal_level(G, new_nlist, length / 2, branch, level - 1)
 
 
 def remove_random_edges(
