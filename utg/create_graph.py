@@ -6,6 +6,7 @@ import warnings
 
 import networkx as nx
 import numpy as np
+import geopandas as gpd
 import shapely
 
 from . import utils
@@ -333,13 +334,83 @@ def _recursive_fractal_level(G, nlist, length, branch, level):
             _recursive_fractal_level(G, new_nlist, length / 2, branch, level - 1)
 
 
+def add_random_edges(G, N=1, is_directed=True, bb_buffer=100):
+    """Add N random edges between existing nodes.
+
+    As we are using spatial networks, edges can't cross each other, meaning that we need to find nodes that can see eachother. One way to do so is by finding the Voronoi cells of each nodes. Intersecting voronoi cells means that an edge can exist between two nodes.
+
+    Args:
+        G (networkc.Graph or neworkx.MultiDiGraph): Graph on which we want to remove edges.
+        N (int, optional): Number of edges we want to add. Defaults to 1.
+        is_directed (bool, optional): Need to be True if the graph is directed. Defaults to True.
+        bb_buffer (int, optional): Buffer around the network for the boundings of the Voronoi cells. Defaults to 100.
+
+    Returns:
+        _type_: _description_
+    """
+    G = G.copy()
+    if is_directed is True:
+        G = nx.MultiGraph(G)
+    pos_list = [utils.get_node_coord(G, n) for n in G.nodes]
+    xmin, ymin = np.min(pos_list, axis=0)
+    xmax, ymax = np.max(pos_list, axis=0)
+    bb = np.array(
+        [xmin - bb_buffer, xmax + bb_buffer, ymin - bb_buffer, ymax + bb_buffer]
+    )
+    bounded_vor = utils.bounded_voronoi(pos_list, bb)
+    vor_cells = utils.create_voronoi_polygons(bounded_vor)
+    ord_vor_cells = np.zeros(len(vor_cells), dtype=object)
+    for c, i in enumerate(bounded_vor.filtered_points):
+        ord_vor_cells[i] = vor_cells[c]
+    d = {"coordinates": pos_list, "voronoi": vor_cells}
+    gdf = gpd.GeoDataFrame(data=d, index=G.nodes())
+    added = 0
+    count = len(G.edges)
+    trials = 0
+    while added < N:
+        trials += 1
+        valid = True
+        u, v = random.sample(list(G.nodes), 2)
+        try:
+            G.edges[u, v, 0]["test"] = 0
+        except KeyError:
+            pass
+        else:
+            valid = False
+        u_vor = gdf.loc[u, "voronoi"]
+        v_vor = gdf.loc[v, "voronoi"]
+        if not u_vor.intersects(v_vor):
+            valid = False
+        if valid:
+            G.add_edge(
+                u,
+                v,
+                geometry=shapely.LineString(
+                    [utils.get_node_coord(G, u), utils.get_node_coord(G, v)]
+                ),
+            )
+            G.edges[u, v, 0]["length"] = G.edges[u, v, 0]["geometry"].length
+            G.edges[u, v, 0]["osmid"] = count
+            count += 1
+            added += 1
+            trials = 0
+        if trials > 1000:
+            warnings.warn(
+                "1000 consecutive random trials without finding an edge to add, verify that there are edges that can be added before retrying."
+            )
+            break
+    if is_directed is True:
+        return nx.MultiDiGraph(G)
+    return G
+
+
 def remove_random_edges(
     G, N=1, keep_all_nodes=True, prevent_disconnect=True, is_directed=True
 ):
     """Remove random edges from a graph.
 
     Args:
-        G (neworkx.MultiDiGraph): Graph on which we want to remove edges.
+        G (networkc.Graph or neworkx.MultiDiGraph): Graph on which we want to remove edges.
         N (int, optional): Number of edges we want to remove. Defaults to 1.
         prevent_disconnect (bool, optional): If True, will keep the network as connected as it was initially. Defaults to True.
         is_directed (bool, optional): Need to be True if the graph is directed. Defaults to True.

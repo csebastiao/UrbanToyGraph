@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 import geopandas as gpd
 import numpy as np
 import shapely
+import scipy.spatial as sp
 import networkx as nx
 
 
@@ -25,7 +26,16 @@ def load_graph(filepath):
     return G
 
 
-def plot_graph(G, bb="square", show=True, save=False, filepath=None):
+def plot_graph(
+    G,
+    bb="square",
+    show_voronoi=False,
+    show=True,
+    save=False,
+    filepath=None,
+    rel_buff=0.1,
+    vor_buff=100,
+):
     """Plot the graph using geopandas plotting function, with the option to save the picture."""
     fig, ax = plt.subplots()
     geom_node = [shapely.Point(get_node_coord(G, node)) for node in G.nodes]
@@ -38,16 +48,24 @@ def plot_graph(G, bb="square", show=True, save=False, filepath=None):
     ax.set_yticks([])
     bounds = gdf_node.total_bounds
     if bb == "square":
-        BUFFER = 0.1
         side_length = max(bounds[3] - bounds[1], bounds[2] - bounds[0])
         mean_x = (bounds[0] + bounds[2]) / 2
         mean_y = (bounds[1] + bounds[3]) / 2
-        xmin = mean_x - (1 + BUFFER) * side_length / 2
-        xmax = mean_x + (1 + BUFFER) * side_length / 2
-        ymin = mean_y - (1 + BUFFER) * side_length / 2
-        ymax = mean_y + (1 + BUFFER) * side_length / 2
+        xmin = mean_x - (1 + rel_buff) * side_length / 2
+        xmax = mean_x + (1 + rel_buff) * side_length / 2
+        ymin = mean_y - (1 + rel_buff) * side_length / 2
+        ymax = mean_y + (1 + rel_buff) * side_length / 2
         ax.set_xlim([xmin, xmax])
         ax.set_ylim([ymin, ymax])
+    if show_voronoi:
+        bb = np.array(
+            [xmin - vor_buff, xmax + vor_buff, ymin - vor_buff, ymax + vor_buff]
+        )
+        bounded_vor = bounded_voronoi([get_node_coord(G, node) for node in G.nodes], bb)
+        vor_cells = create_voronoi_polygons(bounded_vor)
+        gdf_voronoi = gpd.GeoDataFrame(geometry=vor_cells)
+        gdf_voronoi.geometry = gdf_voronoi.geometry.exterior
+        gdf_voronoi.plot(ax=ax, color="firebrick", alpha=0.7, zorder=0)
     if show:
         plt.show()
     if save:
@@ -87,3 +105,57 @@ def find_angle(vec):
         return angle
     else:
         return np.arccos(normvec[0]) + np.pi / 2
+
+
+def bounded_voronoi(points, bb):
+    """Make bounded voronoi cells for points. Made using https://stackoverflow.com/questions/28665491/getting-a-bounded-polygon-coordinates-from-voronoi-cells"""
+    points_left = np.copy(points)
+    points_left[:, 0] = bb[0] - (points_left[:, 0] - bb[0])
+    points_right = np.copy(points)
+    points_right[:, 0] = bb[1] + (bb[1] - points_right[:, 0])
+    points_down = np.copy(points)
+    points_down[:, 1] = bb[2] - (points_down[:, 1] - bb[2])
+    points_up = np.copy(points)
+    points_up[:, 1] = bb[3] + (bb[3] - points_up[:, 1])
+    points = np.append(
+        points,
+        np.append(
+            np.append(points_left, points_right, axis=0),
+            np.append(points_down, points_up, axis=0),
+            axis=0,
+        ),
+        axis=0,
+    )
+    vor = sp.Voronoi(points)
+    regions = []
+    points_ordered = []
+    for c, region in enumerate(vor.regions):
+        flag = True
+        for index in region:
+            if index == -1:
+                flag = False
+                break
+            else:
+                x = vor.vertices[index, 0]
+                y = vor.vertices[index, 1]
+                if not (bb[0] <= x and x <= bb[1] and bb[2] <= y and y <= bb[3]):
+                    flag = False
+                    break
+        if region != [] and flag:
+            regions.append(region)
+            points_ordered.append(np.where(vor.point_region == c)[0][0])
+    vor.filtered_points = points_ordered
+    vor.filtered_regions = regions
+    return vor
+
+
+def create_voronoi_polygons(vor, filtered=True):
+    """Create polygons from Voronoi regions."""
+    vor_poly = []
+    attr = vor.regions
+    if filtered:
+        attr = vor.filtered_regions
+    for region in attr:
+        vertices = vor.vertices[region, :]
+        vor_poly.append(shapely.Polygon(vertices))
+    return vor_poly
