@@ -344,19 +344,3 @@ def remove_random_edges(
     if is_directed:
         G = nx.MultiDiGraph(G)
     return G
-
-
-def save_graph(G, filepath):
-    """Save the graph in the corresponding filepath, converting geometry to WKT string."""
-    G = G.copy()
-    for e in G.edges:
-        G.edges[e]["geometry"] = shapely.to_wkt(G.edges[e]["geometry"])
-    nx.write_graphml(G, filepath)
-
-
-def load_graph(filepath):
-    """Load the graph from the corresponding filepath, creating geometry from WKT string."""
-    G = nx.read_graphml(filepath)
-    for e in G.edges:
-        G.edges[e]["geometry"] = shapely.from_wkt_wkt(G.edges[e]["geometry"])
-    return G
