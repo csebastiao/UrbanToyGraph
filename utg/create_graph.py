@@ -315,7 +315,7 @@ def _recursive_fractal_level(G, nlist, length, branch, level):
             _recursive_fractal_level(G, new_nlist, length / 2, branch, level - 1)
 
 
-def add_random_edges(G, N=1, is_directed=True, bb_buffer=100):
+def add_random_edges(G, N=1, is_directed=True):
     """Add N random edges between existing nodes.
 
     As we are using spatial networks, edges can't cross each other, meaning that we need to find nodes that can see eachother. One way to do so is by finding the Voronoi cells of each nodes. Intersecting voronoi cells means that an edge can exist between two nodes.
@@ -324,7 +324,6 @@ def add_random_edges(G, N=1, is_directed=True, bb_buffer=100):
         G (networkc.Graph or neworkx.MultiDiGraph): Graph on which we want to remove edges.
         N (int, optional): Number of edges we want to add. Defaults to 1.
         is_directed (bool, optional): Need to be True if the graph is directed. Defaults to True.
-        bb_buffer (int, optional): Buffer around the network for the boundings of the Voronoi cells. Defaults to 100.
 
     Returns:
         _type_: _description_
@@ -335,6 +334,7 @@ def add_random_edges(G, N=1, is_directed=True, bb_buffer=100):
     pos_list = [utils.get_node_coord(G, n) for n in G.nodes]
     xmin, ymin = np.min(pos_list, axis=0)
     xmax, ymax = np.max(pos_list, axis=0)
+    bb_buffer = max(xmax - xmin, ymax - ymin)
     bb = np.array(
         [xmin - bb_buffer, xmax + bb_buffer, ymin - bb_buffer, ymax + bb_buffer]
     )

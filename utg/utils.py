@@ -46,7 +46,6 @@ def plot_graph(
     save=False,
     filepath=None,
     rel_buff=0.1,
-    vor_buff=100,
 ):
     """Plot the graph using geopandas plotting function, with the option to save the picture."""
     fig, ax = plt.subplots()
@@ -70,6 +69,7 @@ def plot_graph(
         ax.set_xlim([xmin, xmax])
         ax.set_ylim([ymin, ymax])
     if show_voronoi:
+        vor_buff = max(xmax - xmin, ymax - ymin)
         bb = np.array(
             [xmin - vor_buff, xmax + vor_buff, ymin - vor_buff, ymax + vor_buff]
         )
@@ -118,23 +118,20 @@ def find_angle(vec):
 
 def bounded_voronoi(points, bb):
     """Make bounded voronoi cells for points. Made using https://stackoverflow.com/questions/28665491/getting-a-bounded-polygon-coordinates-from-voronoi-cells"""
-    points_left = np.copy(points)
-    points_left[:, 0] = bb[0] - (points_left[:, 0] - bb[0])
-    points_right = np.copy(points)
-    points_right[:, 0] = bb[1] + (bb[1] - points_right[:, 0])
-    points_down = np.copy(points)
-    points_down[:, 1] = bb[2] - (points_down[:, 1] - bb[2])
-    points_up = np.copy(points)
-    points_up[:, 1] = bb[3] + (bb[3] - points_up[:, 1])
-    points = np.append(
-        points,
-        np.append(
-            np.append(points_left, points_right, axis=0),
-            np.append(points_down, points_up, axis=0),
-            axis=0,
-        ),
-        axis=0,
-    )
+    artificial_points = []
+    xsl = bb[1] - bb[0]
+    ysl = bb[3] - bb[2]
+    artificial_points.append([bb[0], bb[2]])
+    artificial_points.append([bb[0], bb[3]])
+    artificial_points.append([bb[1], bb[2]])
+    artificial_points.append([bb[1], bb[3]])
+    for x in np.linspace(bb[0] - xsl, bb[1] + xsl, num=100, endpoint=False)[1:]:
+        artificial_points.append([x, bb[2]])
+        artificial_points.append([x, bb[3]])
+    for y in np.linspace(bb[2] - ysl, bb[3] + ysl, num=100, endpoint=False)[1:]:
+        artificial_points.append([bb[0], y])
+        artificial_points.append([bb[1], y])
+    points = np.concatenate([points, artificial_points])
     vor = sp.Voronoi(points)
     regions = []
     points_ordered = []
