@@ -13,7 +13,7 @@ from . import utils
 
 
 def create_grid_graph(
-    rows=3, cols=3, width=50, height=None, multidigraph=True, diagonal=False
+    rows=3, cols=3, width=50, height=None, multidigraph=False, diagonal=False
 ):
     """Create a grid graph of arbitrary size.
 
@@ -22,7 +22,7 @@ def create_grid_graph(
         cols (int, optional): Number of columns. Defaults to 3.
         width (int or float, optional): Length in the x coordinate. If height is not defined, is the square's length. Defaults to 50.
         height (int or float, optional): If not None, length of the y coordinate. Defaults to None.
-        multidigraph (bool, optional): If True, return Graph as MultiDiGraph. Graph is better for computations and ease of use, MultiDiGraph is more general and osmnx-compatible. Defaults to True.
+        multidigraph (bool, optional): If True, return Graph as MultiDiGraph. Graph is better for computations and ease of use, MultiDiGraph is more general and osmnx-compatible. Defaults to False.
         diagonal (bool, optional): If True, create diagonal edges along the square. Works only if there is an equal amount of rows and columns. Defaults to False.
 
     Raises:
@@ -55,11 +55,8 @@ def create_grid_graph(
             G.edges[(first, second)]["length"] = G.edges[(first, second)][
                 "geometry"
             ].length
-            # Added to make it osmnx-compatible
-            G.edges[(first, second)]["osmid"] = c
     # To make easier node labels
     G = nx.convert_node_labels_to_integers(G)
-    count = len(G.edges)
     if diagonal:
         if cols == rows:
             for i in range(rows - 1):
@@ -78,26 +75,22 @@ def create_grid_graph(
                 G.edges[first, second]["length"] = G.edges[first, second][
                     "geometry"
                 ].length
-                G.edges[first, second]["osmid"] = count + i + 1
         else:
             warnings.warn(
                 "Diagonal is only possible if the number of rows is the same as the number of colums for now."
             )
-    # Added to make it osmnx-compatible
-    G.graph["crs"] = "epsg:2154"
-    G.graph["simplified"] = True
     if multidigraph:
         return nx.MultiDiGraph(G)
     return G
 
 
-def create_radial_graph(radial=4, length=50, multidigraph=True):
+def create_radial_graph(radial=4, length=50, multidigraph=False):
     """Create a radial graph where roads are radiating from a center.
 
     Args:
         radial (int, optional): Number of roads arranged evenly around the center. Needs to be at least 2. Defaults to 4.
         length (int, optional): Lengths of the roads. Defaults to 50.
-        multidigraph (bool, optional): If True, return Graph as MultiDiGraph. Graph is better for computations and ease of use, MultiDiGraph is more general and osmnx-compatible. Defaults to True.
+        multidigraph (bool, optional): If True, return Graph as MultiDiGraph. Graph is better for computations and ease of use, MultiDiGraph is more general and osmnx-compatible. Defaults to False.
 
     Raises:
         ValueError: Radial graph needs at least 3 radial roads to work.
@@ -117,18 +110,15 @@ def create_radial_graph(radial=4, length=50, multidigraph=True):
             y=length * np.sin(i * 2 * np.pi / radial),
         )
         pos = utils.get_node_coord(G, i + 1)
-        G.add_edge(0, i + 1, geometry=shapely.LineString([(0, 0), pos]), osmid=i)
+        G.add_edge(0, i + 1, geometry=shapely.LineString([(0, 0), pos]))
         G.edges[(0, i + 1)]["length"] = G.edges[(0, i + 1)]["geometry"].length
-    # Added to make it osmnx-compatible
-    G.graph["crs"] = "epsg:2154"
-    G.graph["simplified"] = True
     if multidigraph:
         return nx.MultiDiGraph(G)
     return G
 
 
 def create_concentric_graph(
-    radial=8, zones=3, radius=30, center=True, multidigraph=True
+    radial=8, zones=3, radius=30, center=True, multidigraph=False
 ):
     """Create a concentric graph, where nodes are on circular zones, connected to their nearest neighbors and to the next zone.
 
@@ -137,7 +127,7 @@ def create_concentric_graph(
         zones (int, optional): Number of zones. Needs to be at least 1. Defaults to 3.
         radius (int, optional): Radius between zones. Defaults to 30.
         center (bool, optional): If True, add a node at the center of the graph.
-        multidigraph (bool, optional): If True, return Graph as MultiDiGraph. Graph is better for computations and ease of use, MultiDiGraph is more general and osmnx-compatible. Defaults to True.
+        multidigraph (bool, optional): If True, return Graph as MultiDiGraph. Graph is better for computations and ease of use, MultiDiGraph is more general and osmnx-compatible. Defaults to False.
 
     Raises:
         ValueError: Needs two node per zone at least.
@@ -165,7 +155,6 @@ def create_concentric_graph(
                 y=radius * (i + 1) * np.sin(j * 2 * np.pi / radial),
             )
             count += 1
-    count = 0
     # If there is a center node, shift the ID of the nodes in the zones by 1
     startnum = 0
     # And shift the modulo parameter to link last node to first node of a zone
@@ -175,7 +164,7 @@ def create_concentric_graph(
         mod = 0
         for i in range(1, radial + 1):
             pos = [G.nodes[i]["x"], G.nodes[i]["y"]]
-            G.add_edge(0, i, geometry=shapely.LineString([(0, 0), pos]), osmid=count)
+            G.add_edge(0, i, geometry=shapely.LineString([(0, 0), pos]))
             G.edges[(0, i)]["length"] = G.edges[(0, i)]["geometry"].length
             count += 1
     for i in range(zones):
@@ -195,20 +184,14 @@ def create_concentric_graph(
                 fn,
                 sn,
                 geometry=geom,
-                osmid=count,
             )
             G.edges[(fn, sn)]["length"] = G.edges[(fn, sn)]["geometry"].length
-            count += 1
             # Connect nodes to next zone if there is one
             if i < zones - 1:
                 tn = (i + 1) * radial + j
                 tc = utils.get_node_coord(G, tn)
-                G.add_edge(fn, tn, geometry=shapely.LineString([fc, tc]), osmid=count)
+                G.add_edge(fn, tn, geometry=shapely.LineString([fc, tc]))
                 G.edges[(fn, tn)]["length"] = G.edges[(fn, tn)]["geometry"].length
-                count += 1
-    # Added to make it osmnx-compatible
-    G.graph["crs"] = "epsg:2154"
-    G.graph["simplified"] = True
     if multidigraph:
         return nx.MultiDiGraph(G)
     return G
@@ -284,14 +267,14 @@ def WIP_create_curved_linestring(
     return curve
 
 
-def create_fractal_graph(branch=4, level=3, inital_length=100, multidigraph=True):
+def create_fractal_graph(branch=4, level=3, inital_length=100, multidigraph=False):
     """Create a fractal graph, with a repeating number of branch at different levels.
 
     Args:
         branch (int, optional): Number of branch. Defaults to 4.
         level (int, optional): Levels of fractality. Defaults to 3.
         inital_length (int, optional): Length for the branches the first level of fractality. Defaults to 100.
-        multidigraph (bool, optional): If True, return Graph as MultiDiGraph. Graph is better for computations and ease of use, MultiDiGraph is more general and osmnx-compatible. Defaults to True.
+        multidigraph (bool, optional): If True, return Graph as MultiDiGraph. Graph is better for computations and ease of use, MultiDiGraph is more general and osmnx-compatible. Defaults to False.
 
     Returns:
         G (networkx.Graph or networkx.MultiDiGraph): Fractal graph.
@@ -301,8 +284,6 @@ def create_fractal_graph(branch=4, level=3, inital_length=100, multidigraph=True
     _recursive_fractal_level(
         G, range(1, branch + 1), inital_length / 2, branch, level - 1
     )
-    for c, edge in enumerate(G.edges()):
-        G.edges[edge]["osmid"] = c
     if multidigraph:
         return nx.MultiDiGraph(G)
     return G
@@ -390,7 +371,6 @@ def add_random_edges(G, N=1, is_directed=True, bb_buffer=100):
                 ),
             )
             G.edges[u, v, 0]["length"] = G.edges[u, v, 0]["geometry"].length
-            G.edges[u, v, 0]["osmid"] = count
             count += 1
             added += 1
             trials = 0

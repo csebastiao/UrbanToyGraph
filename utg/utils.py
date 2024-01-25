@@ -10,6 +10,18 @@ import scipy.spatial as sp
 import networkx as nx
 
 
+def make_osmnx_compatible(G):
+    """Make the graph osmnx-compatible."""
+    G = G.copy()
+    for c, edge in enumerate(G.edges):
+        G.edges["osmid"] = c
+    G.graph["crs"] = "epsg:2154"
+    G.graph["simplified"] = True
+    if type(G) != nx.MultiDiGraph:
+        G = nx.MultiDiGraph(G)
+    return G
+
+
 def save_graph(G, filepath):
     """Save the graph in the corresponding filepath, converting geometry to WKT string."""
     G = G.copy()
@@ -22,7 +34,7 @@ def load_graph(filepath):
     """Load the graph from the corresponding filepath, creating geometry from WKT string."""
     G = nx.read_graphml(filepath)
     for e in G.edges:
-        G.edges[e]["geometry"] = shapely.from_wkt_wkt(G.edges[e]["geometry"])
+        G.edges[e]["geometry"] = shapely.from_wkt(G.edges[e]["geometry"])
     return G
 
 
