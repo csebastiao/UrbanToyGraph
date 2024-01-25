@@ -296,7 +296,6 @@ def _recursive_fractal_level(G, nlist, length, branch, level):
         vector = list(G.edges(n, data=True))[0][-1]["geometry"].reverse().coords[:]
         new_center = vector[0]
         initial_angle = utils.find_angle(vector) - 2 * np.pi
-        print(vector, initial_angle)
         count = len(G)
         new_nlist = []
         for i in range(1, branch):

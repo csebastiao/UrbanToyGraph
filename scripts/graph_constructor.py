@@ -58,3 +58,9 @@ if __name__ == "__main__":
     utils.plot_graph(
         G, show=False, save=True, filepath="./template_graph/" + graphname + ".png"
     )
+    graphname = "fractaler_cross"
+    G = cg.create_fractal_graph(level=3)
+    utils.save_graph(G, "./template_graph/" + graphname + ".graphml")
+    utils.plot_graph(
+        G, show=False, save=True, filepath="./template_graph/" + graphname + ".png"
+    )

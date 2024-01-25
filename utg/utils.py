@@ -105,7 +105,6 @@ def find_angle(vec):
     """Find the angle of the vector to the origin and the horizontal axis."""
     vec = np.array(vec[1]) - np.array(vec[0])
     normvec = make_true_zero(normalize(vec))
-    print(normvec)
     if normvec[1] >= 0:
         return np.arccos(normvec[0])
     elif normvec[0] >= 0:
