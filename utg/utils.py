@@ -40,14 +40,27 @@ def load_graph(filepath):
 
 def plot_graph(
     G,
-    bb="square",
+    square_bb=True,
     show_voronoi=False,
     show=True,
     save=False,
     filepath=None,
     rel_buff=0.1,
 ):
-    """Plot the graph using geopandas plotting function, with the option to save the picture."""
+    """Plot the graph using geopandas plotting function, with the option to save the picture and see the Voronoi cells.
+
+    Args:
+        G (nx.Graph or nx.MultiDiGraph): Graph we want to plot.
+        square_bb (bool, optional): If True, limits of the figure are a square centered around the graph. Defaults to True.
+        show_voronoi (bool, optional): If True, show the Voronoi cells for each nodes. Defaults to False.
+        show (bool, optional): If True, show the figure in Python. Defaults to True.
+        save (bool, optional): If True, save the figure at the designated filepath. Defaults to False.
+        filepath (_type_, optional): Path for the saved figure. Defaults to None.
+        rel_buff (float, optional): Relative buffer around the nodes, creating padding for the square bounding box. For instance a padding of 10% around each side of the graph for a value of 0.1. Defaults to 0.1.
+
+    Raises:
+        ValueError: If save is True, need to specify a filepath. Filepath can't be None.
+    """
     fig, ax = plt.subplots()
     geom_node = [shapely.Point(get_node_coord(G, node)) for node in G.nodes]
     geom_edge = list(nx.get_edge_attributes(G, "geometry").values())
@@ -58,10 +71,13 @@ def plot_graph(
     ax.set_xticks([])
     ax.set_yticks([])
     bounds = gdf_node.total_bounds
-    if bb == "square":
+    if square_bb:
+        # Find if graph is larger in width or height
         side_length = max(bounds[3] - bounds[1], bounds[2] - bounds[0])
+        # Find center of the graph
         mean_x = (bounds[0] + bounds[2]) / 2
         mean_y = (bounds[1] + bounds[3]) / 2
+        # Add padding
         xmin = mean_x - (1 + rel_buff) * side_length / 2
         xmax = mean_x + (1 + rel_buff) * side_length / 2
         ymin = mean_y - (1 + rel_buff) * side_length / 2
@@ -69,6 +85,7 @@ def plot_graph(
         ax.set_xlim([xmin, xmax])
         ax.set_ylim([ymin, ymax])
     if show_voronoi:
+        # Create a bounding box to create bounded Voronoi cells that can easily be drawn
         vor_buff = max(xmax - xmin, ymax - ymin)
         bb = np.array(
             [xmin - vor_buff, xmax + vor_buff, ymin - vor_buff, ymax + vor_buff]
@@ -117,24 +134,25 @@ def find_angle(vec):
 
 
 def bounded_voronoi(points, bb):
-    """Make bounded voronoi cells for points. Made using https://stackoverflow.com/questions/28665491/getting-a-bounded-polygon-coordinates-from-voronoi-cells"""
+    """Make bounded voronoi cells for points by creating a large square of artifical points far away."""
     artificial_points = []
-    xsl = bb[1] - bb[0]
-    ysl = bb[3] - bb[2]
+    # Make artifical points outside of the bounding box
     artificial_points.append([bb[0], bb[2]])
     artificial_points.append([bb[0], bb[3]])
     artificial_points.append([bb[1], bb[2]])
     artificial_points.append([bb[1], bb[3]])
-    for x in np.linspace(bb[0] - xsl, bb[1] + xsl, num=100, endpoint=False)[1:]:
+    for x in np.linspace(bb[0], bb[1], num=100, endpoint=False)[1:]:
         artificial_points.append([x, bb[2]])
         artificial_points.append([x, bb[3]])
-    for y in np.linspace(bb[2] - ysl, bb[3] + ysl, num=100, endpoint=False)[1:]:
+    for y in np.linspace(bb[2], bb[3], num=100, endpoint=False)[1:]:
         artificial_points.append([bb[0], y])
         artificial_points.append([bb[1], y])
     points = np.concatenate([points, artificial_points])
+    # Find Voronoi regions
     vor = sp.Voronoi(points)
     regions = []
     points_ordered = []
+    # Keep regions for points that are within the bounding box so only the original points
     for c, region in enumerate(vor.regions):
         flag = True
         for index in region:
@@ -150,13 +168,14 @@ def bounded_voronoi(points, bb):
         if region != [] and flag:
             regions.append(region)
             points_ordered.append(np.where(vor.point_region == c)[0][0])
+    # Create filtered attributes to keep in memory the original points and related Voronoi regions
     vor.filtered_points = points_ordered
     vor.filtered_regions = regions
     return vor
 
 
 def create_voronoi_polygons(vor, filtered=True):
-    """Create polygons from Voronoi regions."""
+    """Create polygons from Voronoi regions. Use the filtered attributes from bounded_voronoi."""
     vor_poly = []
     attr = vor.regions
     if filtered:

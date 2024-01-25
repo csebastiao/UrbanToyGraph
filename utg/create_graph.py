@@ -225,6 +225,7 @@ def create_curved_linestring(startpoint, endpoint, radius, offset=0):
     N = 100
     coords = []
     start_angle = utils.find_angle([[0, 0], startpoint])
+    # Use offset because of periodicity of values
     end_angle = utils.find_angle([[0, 0], endpoint]) + offset
     angle_coords = np.linspace(start_angle, end_angle, num=N)
     for i in range(N):
@@ -276,11 +277,17 @@ def create_fractal_graph(branch=4, level=3, inital_length=100, multidigraph=Fals
         inital_length (int, optional): Length for the branches the first level of fractality. Defaults to 100.
         multidigraph (bool, optional): If True, return Graph as MultiDiGraph. Graph is better for computations and ease of use, MultiDiGraph is more general and osmnx-compatible. Defaults to False.
 
+    Raises:
+        ValueError: The level needs to be superior to 2.
+
     Returns:
         G (networkx.Graph or networkx.MultiDiGraph): Fractal graph.
     """
     # First level is radial graph
     G = create_radial_graph(radial=branch, length=inital_length, multidigraph=False)
+    if level <= 1:
+        raise ValueError("Level needs to be superior to 2.")
+    # Use recursive function
     _recursive_fractal_level(
         G, range(1, branch + 1), inital_length / 2, branch, level - 1
     )
@@ -289,12 +296,13 @@ def create_fractal_graph(branch=4, level=3, inital_length=100, multidigraph=Fals
     return G
 
 
-# TODO: Fix, workf for level 2 but not for 3 and after, issue with finding initial angle
 def _recursive_fractal_level(G, nlist, length, branch, level):
     """Recursive function used in create_fractal_graph to got into the different branches at the different levels."""
+    # Add branch for each new of created nodes
     for n in nlist:
         vector = list(G.edges(n, data=True))[0][-1]["geometry"].reverse().coords[:]
         new_center = vector[0]
+        # Find initial angle and make it negative so we can use loop later to add new nodes
         initial_angle = utils.find_angle(vector) - 2 * np.pi
         count = len(G)
         new_nlist = []
@@ -311,6 +319,7 @@ def _recursive_fractal_level(G, nlist, length, branch, level):
             G.add_edge(n, count, geometry=shapely.LineString([new_center, pos]))
             G.edges[(n, count)]["length"] = G.edges[(n, count)]["geometry"].length
             count += 1
+        # If not at last level, use the function on the created nodes from this node to start again
         if level > 1:
             _recursive_fractal_level(G, new_nlist, length / 2, branch, level - 1)
 
@@ -338,9 +347,11 @@ def add_random_edges(G, N=1, is_directed=True):
     bb = np.array(
         [xmin - bb_buffer, xmax + bb_buffer, ymin - bb_buffer, ymax + bb_buffer]
     )
+    # Need to make bounded Voronoi cells
     bounded_vor = utils.bounded_voronoi(pos_list, bb)
     vor_cells = utils.create_voronoi_polygons(bounded_vor)
     ord_vor_cells = np.zeros(len(vor_cells), dtype=object)
+    # Find at which Voronoi cell each points is attached to
     for c, i in enumerate(bounded_vor.filtered_points):
         ord_vor_cells[i] = vor_cells[c]
     d = {"coordinates": pos_list, "voronoi": vor_cells}
@@ -348,12 +359,20 @@ def add_random_edges(G, N=1, is_directed=True):
     added = 0
     count = len(G.edges)
     trials = 0
+    # Test random values until adding enough edges
     while added < N:
         trials += 1
         valid = True
+        # Sampling without replacement
         u, v = random.sample(list(G.nodes), 2)
+        # If edges not already connected, look if their Voronoi Cells intersects
+        if is_directed:
+            tested = [u, v, 0]
+        else:
+            tested = [u, v]
+        # See if there is already an edge between the two nodes by trying to call it
         try:
-            G.edges[u, v, 0]["test"] = 0
+            G.edges[tested]["geometry"] = G.edges[tested]["geometry"]
         except KeyError:
             pass
         else:
@@ -370,10 +389,11 @@ def add_random_edges(G, N=1, is_directed=True):
                     [utils.get_node_coord(G, u), utils.get_node_coord(G, v)]
                 ),
             )
-            G.edges[u, v, 0]["length"] = G.edges[u, v, 0]["geometry"].length
+            G.edges[tested]["length"] = G.edges[tested]["geometry"].length
             count += 1
             added += 1
             trials = 0
+        # Added to avoid infinite (or very long) loop in case there are no more (or almost) edges that can be added
         if trials > 1000:
             warnings.warn(
                 "1000 consecutive random trials without finding an edge to add, verify that there are edges that can be added before retrying."
