@@ -2,6 +2,7 @@ import pytest
 
 from utg.create_graph import (
     create_concentric_graph,
+    create_bridge_graph,
     create_fractal_graph,
     create_grid_graph,
     create_radial_graph,
@@ -24,6 +25,36 @@ def test_grid():
     assert (
         create_grid_graph(width=50, height=100).edges[0, 1]["length"] == 100
         and create_grid_graph(width=50, height=100).edges[0, 3]["length"] == 50
+    )
+
+
+def test_bridge():
+    assert len(create_bridge_graph(sscols=3, outrows=2, bridges=1)) == 30
+    assert (
+        len(
+            create_bridge_graph(sscols=3, outrows=2, bridges=1, multidigraph=True).edges
+        )
+        == 90
+    )
+    assert (
+        len(
+            create_bridge_graph(
+                sscols=3, outrows=2, bridges=1, multidigraph=False
+            ).edges
+        )
+        == 45
+    )
+    assert (
+        create_bridge_graph(sscols=3, outrows=2, bridges=1, blength=100).edges[0, 1][
+            "length"
+        ]
+        == 50
+    )
+    assert (
+        create_bridge_graph(sscols=3, outrows=2, bridges=1, blength=100).edges[12, 17][
+            "length"
+        ]
+        == 100
     )
 
 
@@ -88,7 +119,13 @@ def test_fractal():
 
 
 def test_remove_edge():
-    for func in [create_grid_graph, create_radial_graph, create_concentric_graph]:
+    for func in [
+        create_grid_graph,
+        create_bridge_graph,
+        create_radial_graph,
+        create_concentric_graph,
+        create_fractal_graph,
+    ]:
         G = func(multidigraph=True)
         init_len = len(G.edges)
         G = remove_random_edges(G, N=1, keep_all_nodes=False, prevent_disconnect=True)
@@ -104,6 +141,7 @@ def test_remove_edge():
 def test_add_edge():
     for func in [
         create_grid_graph,
+        create_bridge_graph,
         create_radial_graph,
         create_concentric_graph,
         create_fractal_graph,

@@ -133,6 +133,7 @@ def find_angle(vec):
         return np.arccos(normvec[0]) + np.pi / 2
 
 
+# TODO: Look at shapely voronoi to maybe make a change for better written code
 def bounded_voronoi(points, bb):
     """Make bounded voronoi cells for points by creating a large square of artifical points far away."""
     artificial_points = []

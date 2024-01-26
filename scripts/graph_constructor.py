@@ -58,6 +58,18 @@ if __name__ == "__main__":
     utils.plot_graph(
         G, show=False, save=True, filepath="./template_graph/" + graphname + ".png"
     )
+    graphname = "bridge_small"
+    G = cg.create_bridge_graph()
+    utils.save_graph(G, "./template_graph/" + graphname + ".graphml")
+    utils.plot_graph(
+        G, show=False, save=True, filepath="./template_graph/" + graphname + ".png"
+    )
+    graphname = "bridge_large"
+    G = cg.create_bridge_graph(outrows=4, sscols=4, bridges=2)
+    utils.save_graph(G, "./template_graph/" + graphname + ".graphml")
+    utils.plot_graph(
+        G, show=False, save=True, filepath="./template_graph/" + graphname + ".png"
+    )
     graphname = "fractal_cross"
     G = cg.create_fractal_graph(level=2)
     utils.save_graph(G, "./template_graph/" + graphname + ".graphml")

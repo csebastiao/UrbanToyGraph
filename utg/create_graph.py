@@ -31,7 +31,7 @@ def create_grid_graph(
     Returns:
         G (networkx.Graph or networkx.MultiDiGraph): Grid-like graph.
     """
-    G = nx.grid_2d_graph(rows, cols, create_using=nx.Graph)
+    G = nx.grid_2d_graph(cols, rows, create_using=nx.Graph)
     if width <= 0:
         raise ValueError("Width needs to be positive.")
     if height is None:
@@ -79,6 +79,38 @@ def create_grid_graph(
             warnings.warn(
                 "Diagonal is only possible if the number of rows is the same as the number of colums for now."
             )
+    if multidigraph:
+        return nx.MultiDiGraph(G)
+    return G
+
+
+def create_bridge_graph(
+    outrows=2, sscols=3, block_side=50, bridges=1, blength=150, multidigraph=False
+):
+    total_rows = outrows * (1 + bridges) + 1
+    G = create_grid_graph(rows=total_rows, cols=sscols, width=block_side)
+    H = nx.convert_node_labels_to_integers(G, first_label=len(G))
+    for node in H.nodes:
+        H.nodes[node]["x"] = H.nodes[node]["x"] + block_side * (sscols - 1) + blength
+    for edge in H.edges:
+        H.edges[edge]["geometry"] = shapely.LineString(
+            [
+                [x + block_side * (sscols - 1) + blength, y]
+                for x, y in H.edges[edge]["geometry"].coords[:]
+            ]
+        )
+    G = nx.union(G, H)
+    for i in range(bridges):
+        ln = (sscols - 1) * total_rows + outrows * (i + 1)
+        rn = sscols * total_rows + outrows * (i + 1)
+        G.add_edge(
+            ln,
+            rn,
+            geometry=shapely.LineString(
+                [utils.get_node_coord(G, ln), utils.get_node_coord(G, rn)]
+            ),
+        )
+        G.edges[ln, rn]["length"] = G.edges[ln, rn]["geometry"].length
     if multidigraph:
         return nx.MultiDiGraph(G)
     return G
