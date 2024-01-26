@@ -33,3 +33,19 @@ Once your environment is ready, you can locally install the package using:
 ```
 pip install -e .
 ```
+## Functionalities
+### Create customizable spatial graph
+
+Using the functions located in `utg/create_graph`, you can create spatial graphs, with non-intersecting edges having a geometry attribute. All graph can be created without additional arguments, but can be customized. Graph can be made osmnx-compatible using `utg.utils.make_osmnx_compatible`.
+
+### Graph templates
+
+Here are some examples of graph made using `create_graph` functions. The plots are made and saved using `utg.utils.plot_graph`. The graph are saved in `.graphml` format using `utg.utils.save_graph`. Since we have a geometry attribute, graph saved need to be loaded using `utg.utils.load_graph`, to transform WKT-string to shapely geometry. All graph files and their picture are located in the `template-graph` folder:
+
+- Barcelona ![Barcelona](template_graph/barcelona.png)
+- Fractaler cross ![Fractaler cross](template_graph/fractaler_cross.png)
+- Concentric large ![Concentric large](template_graph/concentric_large.png)
+
+### Add or remove edges
+
+To add some noise in those perfectly geometrical graph you can use `utg.create_graph.add_random_edges` and `utg.create_graph.remove_random_edges`. These functions should work for any spatial graph having `x` and `y` attributes on every nodes.
