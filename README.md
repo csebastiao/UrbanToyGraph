@@ -7,6 +7,7 @@ Toy graph to play with network metrics and algorithms mimicking typical urban pa
 - Grid graph: A grid of m columns and n nodes. Can select a different width and height.
 - Radial graph: Roads coming from a central node in a star-shaped structure. Can select the number of radial roads that will be evenly distributed around the central node.
 - Concentric graph: Nodes that are on connected circles. Can choose the number of radial roads and of circles (called zones). Can choose to put a central node connected to the first circle.
+- Fractal graph: Roads coming from a central node and branching in a fractal way. Can select the number of branches and the level of fractality desired.
 
 ## Installation
 
@@ -40,7 +41,7 @@ Using the functions located in `utg/create_graph`, you can create spatial graphs
 
 ### Graph templates
 
-Here are some examples of graph made using `create_graph` functions. The plots are made and saved using `utg.utils.plot_graph`. The graph are saved in `.graphml` format using `utg.utils.save_graph`. Since we have a geometry attribute, graph saved need to be loaded using `utg.utils.load_graph`, to transform WKT-string to shapely geometry. All graph files and their picture are located in the `template-graph` folder:
+Here are some examples of graph made using `create_graph` functions. The plots are made and saved using `utg.utils.plot_graph`. The graph are saved in `.graphml` format using `utg.utils.save_graph`. All are made in the script `scripts/graph_constructor.py`. Since we have a geometry attribute, graph saved need to be loaded using `utg.utils.load_graph`, to transform WKT-string to shapely geometry. All graph files and their picture are located in the `template-graph` folder:
 
 - Barcelona ![Barcelona](template_graph/barcelona.png)
 - Fractaler cross ![Fractaler cross](template_graph/fractaler_cross.png)
@@ -49,3 +50,5 @@ Here are some examples of graph made using `create_graph` functions. The plots a
 ### Add or remove edges
 
 To add some noise in those perfectly geometrical graph you can use `utg.create_graph.add_random_edges` and `utg.create_graph.remove_random_edges`. These functions should work for any spatial graph having `x` and `y` attributes on every nodes.
+
+⚠️ Be careful, `utg.create_graph.add_random_edges` is only assured to be working as expected if every edges are straight. For a concentric graph, use `utg.create_graph.create_concentric_graph(straight_edges=True)`.
