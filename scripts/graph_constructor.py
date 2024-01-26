@@ -16,6 +16,12 @@ if __name__ == "__main__":
     utils.plot_graph(
         G, show=False, save=True, filepath="./template_graph/" + graphname + ".png"
     )
+    graphname = "concentric_straight"
+    G = cg.create_concentric_graph(radial=4, zones=2, straight_edges=True)
+    utils.save_graph(G, "./template_graph/" + graphname + ".graphml")
+    utils.plot_graph(
+        G, show=False, save=True, filepath="./template_graph/" + graphname + ".png"
+    )
     graphname = "cross"
     G = cg.create_radial_graph()
     utils.save_graph(G, "./template_graph/" + graphname + ".graphml")

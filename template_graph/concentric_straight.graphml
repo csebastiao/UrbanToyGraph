@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="d5" for="edge" attr.name="length" attr.type="double" />
+  <key id="d4" for="edge" attr.name="geometry" attr.type="string" />
+  <key id="d3" for="node" attr.name="y" attr.type="float" />
+  <key id="d2" for="node" attr.name="x" attr.type="float" />
+  <key id="d1" for="node" attr.name="y" attr.type="long" />
+  <key id="d0" for="node" attr.name="x" attr.type="long" />
+  <graph edgedefault="undirected">
+    <node id="0">
+      <data key="d0">0</data>
+      <data key="d1">0</data>
+    </node>
+    <node id="1">
+      <data key="d2">30.0</data>
+      <data key="d3">0.0</data>
+    </node>
+    <node id="2">
+      <data key="d2">1.83697019872103e-15</data>
+      <data key="d3">30.0</data>
+    </node>
+    <node id="3">
+      <data key="d2">-30.0</data>
+      <data key="d3">3.67394039744206e-15</data>
+    </node>
+    <node id="4">
+      <data key="d2">-5.510910596163089e-15</data>
+      <data key="d3">-30.0</data>
+    </node>
+    <node id="5">
+      <data key="d2">60.0</data>
+      <data key="d3">0.0</data>
+    </node>
+    <node id="6">
+      <data key="d2">3.67394039744206e-15</data>
+      <data key="d3">60.0</data>
+    </node>
+    <node id="7">
+      <data key="d2">-60.0</data>
+      <data key="d3">7.34788079488412e-15</data>
+    </node>
+    <node id="8">
+      <data key="d2">-1.1021821192326178e-14</data>
+      <data key="d3">-60.0</data>
+    </node>
+    <edge source="0" target="1">
+      <data key="d4">LINESTRING (0 0, 30 0)</data>
+      <data key="d5">30.0</data>
+    </edge>
+    <edge source="0" target="2">
+      <data key="d4">LINESTRING (0 0, 0 30)</data>
+      <data key="d5">30.0</data>
+    </edge>
+    <edge source="0" target="3">
+      <data key="d4">LINESTRING (0 0, -30 0)</data>
+      <data key="d5">30.0</data>
+    </edge>
+    <edge source="0" target="4">
+      <data key="d4">LINESTRING (0 0, 0 -30)</data>
+      <data key="d5">30.0</data>
+    </edge>
+    <edge source="1" target="2">
+      <data key="d4">LINESTRING (30 0, 0 30)</data>
+      <data key="d5">42.426406871192846</data>
+    </edge>
+    <edge source="1" target="5">
+      <data key="d4">LINESTRING (30 0, 60 0)</data>
+      <data key="d5">30.0</data>
+    </edge>
+    <edge source="1" target="4">
+      <data key="d4">LINESTRING (0 -30, 30 0)</data>
+      <data key="d5">42.42640687119286</data>
+    </edge>
+    <edge source="2" target="3">
+      <data key="d4">LINESTRING (0 30, -30 0)</data>
+      <data key="d5">42.42640687119285</data>
+    </edge>
+    <edge source="2" target="6">
+      <data key="d4">LINESTRING (0 30, 0 60)</data>
+      <data key="d5">30.0</data>
+    </edge>
+    <edge source="3" target="4">
+      <data key="d4">LINESTRING (-30 0, 0 -30)</data>
+      <data key="d5">42.426406871192846</data>
+    </edge>
+    <edge source="3" target="7">
+      <data key="d4">LINESTRING (-30 0, -60 0)</data>
+      <data key="d5">30.0</data>
+    </edge>
+    <edge source="4" target="8">
+      <data key="d4">LINESTRING (0 -30, 0 -60)</data>
+      <data key="d5">30.0</data>
+    </edge>
+    <edge source="5" target="6">
+      <data key="d4">LINESTRING (60 0, 0 60)</data>
+      <data key="d5">84.85281374238569</data>
+    </edge>
+    <edge source="5" target="8">
+      <data key="d4">LINESTRING (0 -60, 60 0)</data>
+      <data key="d5">84.85281374238572</data>
+    </edge>
+    <edge source="6" target="7">
+      <data key="d4">LINESTRING (0 60, -60 0)</data>
+      <data key="d5">84.8528137423857</data>
+    </edge>
+    <edge source="7" target="8">
+      <data key="d4">LINESTRING (-60 0, 0 -60)</data>
+      <data key="d5">84.85281374238569</data>
+    </edge>
+  </graph>
+</graphml>

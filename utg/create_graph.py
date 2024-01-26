@@ -118,7 +118,7 @@ def create_radial_graph(radial=4, length=50, multidigraph=False):
 
 
 def create_concentric_graph(
-    radial=8, zones=3, radius=30, center=True, multidigraph=False
+    radial=8, zones=3, radius=30, straight_edges=False, center=True, multidigraph=False
 ):
     """Create a concentric graph, where nodes are on circular zones, connected to their nearest neighbors and to the next zone.
 
@@ -178,8 +178,10 @@ def create_concentric_graph(
                 offset += 2 * np.pi
             fc = utils.get_node_coord(G, fn)
             sc = utils.get_node_coord(G, sn)
-            # Add edge in both directions
-            geom = create_curved_linestring(fc, sc, radius * (i + 1), offset=offset)
+            if straight_edges:
+                geom = shapely.LineString([fc, sc])
+            else:
+                geom = create_curved_linestring(fc, sc, radius * (i + 1), offset=offset)
             G.add_edge(
                 fn,
                 sn,
@@ -328,6 +330,7 @@ def add_random_edges(G, N=1, is_directed=True):
     """Add N random edges between existing nodes.
 
     As we are using spatial networks, edges can't cross each other, meaning that we need to find nodes that can see eachother. One way to do so is by finding the Voronoi cells of each nodes. Intersecting voronoi cells means that an edge can exist between two nodes.
+    Can only assure of good behavior if edges are always straight. For instance for concentric graph, need to specify straight_edges=True.
 
     Args:
         G (networkc.Graph or neworkx.MultiDiGraph): Graph on which we want to remove edges.

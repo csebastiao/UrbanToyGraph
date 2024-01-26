@@ -17,7 +17,7 @@
     </node>
     <node id="2">
       <data key="d2">35.35533905932738</data>
-      <data key="d3">35.35533905932738</data>
+      <data key="d3">35.35533905932737</data>
     </node>
     <node id="3">
       <data key="d2">3.061616997868383e-15</data>
@@ -49,7 +49,7 @@
     </edge>
     <edge source="0" target="2">
       <data key="d4">LINESTRING (0 0, 35.355339 35.355339)</data>
-      <data key="d5">50.0</data>
+      <data key="d5">49.99999999999999</data>
     </edge>
     <edge source="0" target="3">
       <data key="d4">LINESTRING (0 0, 0 50)</data>
