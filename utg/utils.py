@@ -14,7 +14,7 @@ def make_osmnx_compatible(G):
     """Make the graph osmnx-compatible."""
     G = G.copy()
     for c, edge in enumerate(G.edges):
-        G.edges["osmid"] = c
+        G.edges[edge]["osmid"] = c
     G.graph["crs"] = "epsg:2154"
     G.graph["simplified"] = True
     if type(G) != nx.MultiDiGraph:
