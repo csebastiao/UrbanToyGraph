@@ -44,6 +44,7 @@ def plot_graph(
     show_voronoi=False,
     show=True,
     save=False,
+    close=False,
     filepath=None,
     rel_buff=0.1,
 ):
@@ -101,6 +102,9 @@ def plot_graph(
         if filepath is None:
             raise ValueError("If save is True, need to specify a filepath")
         fig.savefig(filepath, dpi=300)
+    if close:
+        plt.close()
+    return fig, ax
 
 
 def make_true_zero(vec):
