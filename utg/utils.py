@@ -33,6 +33,7 @@ def save_graph(G, filepath):
 def load_graph(filepath):
     """Load the graph from the corresponding filepath, creating geometry from WKT string."""
     G = nx.read_graphml(filepath)
+    G = nx.relabel_nodes(G, lambda x: int(x))
     for e in G.edges:
         G.edges[e]["geometry"] = shapely.from_wkt(G.edges[e]["geometry"])
     return G
