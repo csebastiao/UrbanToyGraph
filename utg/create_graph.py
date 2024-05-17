@@ -84,6 +84,69 @@ def create_grid_graph(
     return G
 
 
+def create_distorted_grid_graph(
+    rows=3,
+    cols=3,
+    width=50,
+    height=None,
+    multidigraph=False,
+    seed=None,
+    distribution="uniform",
+    spacing=0.95,
+):
+    """Create a distorted grid graph of arbitrary size.
+
+    Args:
+        rows (int, optional): Number or rows. Defaults to 3.
+        cols (int, optional): Number of columns. Defaults to 3.
+        width (int or float, optional): Length in the x coordinate. If height is not defined, is the square's length. Defaults to 50.
+        height (int or float, optional): If not None, length of the y coordinate. Defaults to None.
+        multidigraph (bool, optional): If True, return Graph as MultiDiGraph. Graph is better for computations and ease of use, MultiDiGraph is more general and osmnx-compatible. Defaults to False.
+        diagonal (bool, optional): If True, create diagonal edges along the square. Works only if there is an equal amount of rows and columns. Defaults to False.
+
+    Raises:
+        ValueError: width needs to be positive.
+
+    Returns:
+        G (networkx.Graph or networkx.MultiDiGraph): Grid-like graph.
+    """
+    G = nx.grid_2d_graph(cols, rows, create_using=nx.Graph)
+    if width <= 0:
+        raise ValueError("Width needs to be positive.")
+    if height is None:
+        height = width
+    else:
+        warnings.warn(
+            "Height value selected, if different than width, will create rectangles instead of squares."
+        )
+    if not 0 < spacing <= 0.99:
+        raise ValueError("Spacing needs to be between 0 and 0.99.")
+    rng = np.random.default_rng(seed)
+    for node in G.nodes:
+        x, y = node
+        G.nodes[node]["x"] = x * width + rng.uniform(
+            -spacing * width / 2, spacing * width / 2
+        )
+        G.nodes[node]["y"] = y * height + rng.uniform(
+            -spacing * height / 2, spacing * height / 2
+        )
+    for edge in G.edges:
+        first, second = edge
+        # Edges' geometry is straight line between the linked nodes
+        G.edges[(first, second)]["geometry"] = shapely.LineString(
+            [
+                (G.nodes[first]["x"], G.nodes[first]["y"]),
+                (G.nodes[second]["x"], G.nodes[second]["y"]),
+            ]
+        )
+        G.edges[(first, second)]["length"] = G.edges[(first, second)]["geometry"].length
+    # To make easier node labels
+    G = nx.convert_node_labels_to_integers(G)
+    if multidigraph:
+        return nx.MultiDiGraph(G)
+    return G
+
+
 def create_bridge_graph(
     outrows=2, sscols=3, block_side=50, bridges=1, blength=150, multidigraph=False
 ):
