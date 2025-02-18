@@ -261,22 +261,24 @@ def create_concentric_graph(
             pos = [G.nodes[i]["x"], G.nodes[i]["y"]]
             G.add_edge(0, i, geometry=shapely.LineString([(0, 0), pos]))
             G.edges[(0, i)]["length"] = G.edges[(0, i)]["geometry"].length
-            count += 1
     for i in range(zones):
         for j in range(startnum, startnum + radial):
             fn = i * radial + j
             sn = i * radial + j + 1
             # At last node of a zone, link to first node
-            offset = 0
             if j % radial == mod:
                 sn -= radial
-                offset += 2 * np.pi
             fc = utils.get_node_coord(G, fn)
             sc = utils.get_node_coord(G, sn)
             if straight_edges:
                 geom = shapely.LineString([fc, sc])
             else:
-                geom = create_curved_linestring(fc, sc, radius * (i + 1), offset=offset)
+                if j % radial == mod:
+                    geom = create_curved_linestring(
+                        sc, fc, radius * (i + 1), offset=2 * math.pi
+                    )
+                else:
+                    geom = create_curved_linestring(fc, sc, radius * (i + 1))
             G.add_edge(
                 fn,
                 sn,
@@ -320,49 +322,17 @@ def create_curved_linestring(startpoint, endpoint, radius, offset=0):
                 "Radius needs to be larger than the Euclidean distance between the points."
             )
     N = 100
-    coords = []
-    start_angle = utils.find_angle([[0, 0], startpoint])
+    start_angle = math.atan2(startpoint[1], startpoint[0]) + offset
     # Use offset because of periodicity of values
-    end_angle = utils.find_angle([[0, 0], endpoint]) + offset
+    end_angle = math.atan2(endpoint[1], endpoint[0])
+    if end_angle < start_angle:
+        end_angle += 2 * np.pi
     angle_coords = np.linspace(start_angle, end_angle, num=N)
-    for i in range(N):
-        coords.append(
-            [radius * np.cos(angle_coords[i]), radius * np.sin(angle_coords[i])]
-        )
+    coords = [
+        [radius * np.cos(angle_coords[i]), radius * np.sin(angle_coords[i])]
+        for i in range(N)
+    ]
     return shapely.LineString(coords)
-
-
-# TODO: Find way to know the coordinates of the n_coord points. Maybe find the center of the circle and draw from here ?
-# Need to be able to specify which side because there are always two center (except if right in the middle) !
-def WIP_create_curved_linestring(
-    startpoint, endpoint, radius, side="smaller", n_coord=100
-):
-    """Create a curved linestring between two points.
-
-    The function suppose that the startpoint and the endpoint are both on a circle of a given radius and create the corresponding shapely.LineString, with the number of points on the LineString being n_coord.
-
-    Args:
-        startpoint (array-like): (x,y) coordinates of the first point.
-        endpoint (array-like): (x,y) coordinates of the last point.
-        radius (int or float): Radius of the circle on which the points are.
-        side (str, optional):  Side on which the center of the circle is. The options are smaller and bigger, meaning if the sum of the coordinates of the center is smaller or bigger than the average sum of the coordinates of the two points. Defaults to "smaller".
-        n_coord (int, optional): Number of coordinates of the linestring. A higher number means a better, more refined curve. Defaults to 100.
-
-    Raises:
-        ValueError: The radius needs to be at least as long as the Euclidean distance between the points.
-
-    Returns:
-        curve (shapely.LineString): Curved linestring between the two points.
-    """
-    if np.linalg.norm([startpoint, endpoint]) > 2 * radius:
-        raise ValueError(
-            "Radius needs to be larger than the Euclidean distance between the points."
-        )
-    coords = []
-    for i in range(n_coord):
-        coords.append([i, i])
-    curve = shapely.LineString(coords)
-    return curve
 
 
 def create_fractal_graph(branch=4, level=3, inital_length=100, multidigraph=False):

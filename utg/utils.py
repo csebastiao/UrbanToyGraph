@@ -123,21 +123,6 @@ def normalize(vec):
     return vec / np.linalg.norm(vec)
 
 
-def find_angle(vec):
-    """Find the angle of the vector to the origin and the horizontal axis."""
-    vec = np.array(vec[1]) - np.array(vec[0])
-    normvec = make_true_zero(normalize(vec))
-    if normvec[1] >= 0:
-        return np.arccos(normvec[0])
-    elif normvec[0] >= 0:
-        angle = np.arcsin(normvec[1])
-        if angle < 0:
-            angle += 2 * np.pi
-        return angle
-    else:
-        return np.arccos(normvec[0]) + np.pi / 2
-
-
 # TODO: Look at shapely voronoi to maybe make a change for better written code
 def bounded_voronoi(points, bb):
     """Make bounded voronoi cells for points by creating a large square of artifical points far away."""
