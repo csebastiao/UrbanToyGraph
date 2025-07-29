@@ -85,6 +85,7 @@ def plot_graph(
     edge_linewidth=2,
     node_size=20,
     dpi=300,
+    no_border=False,
 ):
     """
     Plot the graph using geopandas plotting function, with the option to save the picture and see the Voronoi cells.
@@ -93,10 +94,18 @@ def plot_graph(
         G (nx.Graph or nx.MultiDiGraph): Graph we want to plot.
         square_bb (bool, optional): If True, limits of the figure are a square centered around the graph. Defaults to True.
         show_voronoi (bool, optional): If True, show the Voronoi cells for each nodes. Defaults to False.
+        voronoi_color (str, optional): Color of the Voronoi cells. Defaults to firebrick.
+        voronoi_alpha (float, optional): Transparency of the Voronoi cells. Defaults to 0.7.
         show (bool, optional): If True, show the figure in Python. Defaults to True.
         save (bool, optional): If True, save the figure at the designated filepath. Defaults to False.
         filepath (_type_, optional): Path for the saved figure. Defaults to None.
         rel_buff (float, optional): Relative buffer around the nodes, creating padding for the square bounding box. For instance a padding of 10% around each side of the graph for a value of 0.1. Defaults to 0.1.
+        edge_color (str, optional): Color of the edges. Defaults to black.
+        node_color (str, optional): Color of the nodes. Defaults to black.
+        edge_linewidth (int, optional): Width of the edges. Defaults to 2.
+        node_size (int, optional): Size of the nodes. Defaults to 20.
+        dpi (int, optional): Dots per inches of the figure. Defaults to 300.
+        no_border (str, optional): If True, remove borders of the plot. Defaults to False.
 
     Raises:
         ValueError: If save is True, need to specify a filepath. Filepath can't be None.
@@ -135,6 +144,8 @@ def plot_graph(
         gdf_voronoi = gpd.GeoDataFrame(geometry=vor_cells)
         gdf_voronoi.geometry = gdf_voronoi.geometry.exterior
         gdf_voronoi.plot(ax=ax, color=voronoi_color, alpha=voronoi_alpha, zorder=0)
+    if no_border:
+        ax.axis("off")
     if show:
         plt.show()
     if save:
