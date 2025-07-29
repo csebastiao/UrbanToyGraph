@@ -47,10 +47,10 @@ Using the functions located in `utg/create_graph`, you can create spatial graphs
 
 Here are some examples of graph made using `create_graph` functions. The plots are made and saved using `utg.utils.plot_graph`. The graph are saved in `.graphml` format using `utg.utils.save_graph`. All are made in the script `scripts/graph_constructor.py`. Since we have a geometry attribute, graph saved need to be loaded using `utg.utils.load_graph`, to transform WKT-string to shapely geometry. All graph files and their picture are located in the `template-graph` folder:
 
-- Barcelona ![Barcelona](template_graph/barcelona.png)
-- Bridge large ![Bridge large](template_graph/bridge_large.png)
-- Concentric large ![Concentric large](template_graph/concentric_large.png)
-- Fractaler cross ![Fractaler cross](template_graph/fractaler_cross.png)
+- Barcelona ![Barcelona](demo/template_graph/barcelona.png)
+- Bridge large ![Bridge large](demo/template_graph/bridge_large.png)
+- Concentric large ![Concentric large](demo/template_graph/concentric_large.png)
+- Fractaler cross ![Fractaler cross](demo/template_graph/fractaler_cross.png)
 
 ### Add or remove edges
 
