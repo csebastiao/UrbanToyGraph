@@ -72,6 +72,7 @@ def load_graph(filepath):
 def plot_graph(
     G,
     square_bb=True,
+    figsize=(6, 6),
     show_voronoi=False,
     voronoi_color="firebrick",
     voronoi_alpha=0.7,
@@ -85,7 +86,8 @@ def plot_graph(
     edge_linewidth=2,
     node_size=20,
     dpi=300,
-    no_border=False,
+    no_border=True,
+    tight=True,
 ):
     """
     Plot the graph using geopandas plotting function, with the option to save the picture and see the Voronoi cells.
@@ -93,6 +95,7 @@ def plot_graph(
     Args:
         G (nx.Graph or nx.MultiDiGraph): Graph we want to plot.
         square_bb (bool, optional): If True, limits of the figure are a square centered around the graph. Defaults to True.
+        figsize (tuple, optional): Size of the figure. Defaults to (10, 10).
         show_voronoi (bool, optional): If True, show the Voronoi cells for each nodes. Defaults to False.
         voronoi_color (str, optional): Color of the Voronoi cells. Defaults to firebrick.
         voronoi_alpha (float, optional): Transparency of the Voronoi cells. Defaults to 0.7.
@@ -105,12 +108,15 @@ def plot_graph(
         edge_linewidth (int, optional): Width of the edges. Defaults to 2.
         node_size (int, optional): Size of the nodes. Defaults to 20.
         dpi (int, optional): Dots per inches of the figure. Defaults to 300.
-        no_border (str, optional): If True, remove borders of the plot. Defaults to False.
+        no_border (str, optional): If True, remove borders of the plot. Defaults to True.
+        tight (bool, optional): If True, use tight layout for the figure. Defaults to True.
 
     Raises:
         ValueError: If save is True, need to specify a filepath. Filepath can't be None.
     """
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=figsize)
+    if tight:
+        fig.set_layout_engine("tight")
     geom_node = [shapely.Point(get_node_coord(G, node)) for node in G.nodes]
     geom_edge = list(nx.get_edge_attributes(G, "geometry").values())
     gdf_node = gpd.GeoDataFrame(geometry=geom_node)
