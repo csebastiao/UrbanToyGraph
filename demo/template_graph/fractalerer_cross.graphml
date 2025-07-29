@@ -125,7 +125,7 @@
     </node>
     <node id="29">
       <data key="d2">162.5</data>
-      <data key="d3">25.0</data>
+      <data key="d3">25.000000000000004</data>
     </node>
     <node id="30">
       <data key="d2">150.0</data>
@@ -137,7 +137,7 @@
     </node>
     <node id="32">
       <data key="d2">125.0</data>
-      <data key="d3">50.0</data>
+      <data key="d3">50.00000000000001</data>
     </node>
     <node id="33">
       <data key="d2">100.0</data>
@@ -149,15 +149,15 @@
     </node>
     <node id="35">
       <data key="d2">125.0</data>
-      <data key="d3">37.5</data>
+      <data key="d3">37.50000000000001</data>
     </node>
     <node id="36">
       <data key="d2">137.5</data>
-      <data key="d3">50.0</data>
+      <data key="d3">50.00000000000001</data>
     </node>
     <node id="37">
       <data key="d2">125.0</data>
-      <data key="d3">62.5</data>
+      <data key="d3">62.50000000000001</data>
     </node>
     <node id="38">
       <data key="d2">112.5</data>
@@ -185,10 +185,10 @@
     </node>
     <node id="44">
       <data key="d2">50.00000000000001</data>
-      <data key="d3">100.0</data>
+      <data key="d3">100.00000000000001</data>
     </node>
     <node id="45">
-      <data key="d2">9.184850993605149e-15</data>
+      <data key="d2">-3.0616169978683826e-15</data>
       <data key="d3">150.0</data>
     </node>
     <node id="46">
@@ -196,99 +196,99 @@
       <data key="d3">100.0</data>
     </node>
     <node id="47">
-      <data key="d2">50.00000000000001</data>
-      <data key="d3">75.0</data>
+      <data key="d2">50.000000000000014</data>
+      <data key="d3">75.00000000000001</data>
     </node>
     <node id="48">
       <data key="d2">75.0</data>
-      <data key="d3">100.0</data>
+      <data key="d3">100.00000000000001</data>
     </node>
     <node id="49">
-      <data key="d2">50.00000000000001</data>
-      <data key="d3">125.0</data>
+      <data key="d2">50.0</data>
+      <data key="d3">125.00000000000001</data>
     </node>
     <node id="50">
-      <data key="d2">37.50000000000001</data>
-      <data key="d3">75.0</data>
+      <data key="d2">37.500000000000014</data>
+      <data key="d3">75.00000000000001</data>
     </node>
     <node id="51">
-      <data key="d2">50.00000000000001</data>
-      <data key="d3">62.5</data>
+      <data key="d2">50.000000000000014</data>
+      <data key="d3">62.500000000000014</data>
     </node>
     <node id="52">
-      <data key="d2">62.50000000000001</data>
-      <data key="d3">75.0</data>
+      <data key="d2">62.500000000000014</data>
+      <data key="d3">75.00000000000001</data>
     </node>
     <node id="53">
       <data key="d2">75.0</data>
-      <data key="d3">87.5</data>
+      <data key="d3">87.50000000000001</data>
     </node>
     <node id="54">
       <data key="d2">87.5</data>
-      <data key="d3">100.0</data>
+      <data key="d3">100.00000000000001</data>
     </node>
     <node id="55">
       <data key="d2">75.0</data>
-      <data key="d3">112.5</data>
+      <data key="d3">112.50000000000001</data>
     </node>
     <node id="56">
-      <data key="d2">62.50000000000001</data>
-      <data key="d3">125.0</data>
+      <data key="d2">62.5</data>
+      <data key="d3">125.00000000000001</data>
     </node>
     <node id="57">
-      <data key="d2">50.00000000000001</data>
+      <data key="d2">50.0</data>
       <data key="d3">137.5</data>
     </node>
     <node id="58">
-      <data key="d2">37.50000000000001</data>
-      <data key="d3">125.0</data>
+      <data key="d2">37.5</data>
+      <data key="d3">125.00000000000001</data>
     </node>
     <node id="59">
-      <data key="d2">25.00000000000001</data>
+      <data key="d2">24.999999999999996</data>
       <data key="d3">150.0</data>
     </node>
     <node id="60">
-      <data key="d2">1.071565949253934e-14</data>
+      <data key="d2">-7.654042494670956e-15</data>
       <data key="d3">175.0</data>
     </node>
     <node id="61">
-      <data key="d2">-24.99999999999999</data>
+      <data key="d2">-25.000000000000004</data>
       <data key="d3">150.0</data>
     </node>
     <node id="62">
-      <data key="d2">25.00000000000001</data>
+      <data key="d2">24.999999999999996</data>
       <data key="d3">137.5</data>
     </node>
     <node id="63">
-      <data key="d2">37.500000000000014</data>
+      <data key="d2">37.5</data>
       <data key="d3">150.0</data>
     </node>
     <node id="64">
-      <data key="d2">25.00000000000001</data>
+      <data key="d2">24.999999999999996</data>
       <data key="d3">162.5</data>
     </node>
     <node id="65">
-      <data key="d2">12.50000000000001</data>
+      <data key="d2">12.499999999999993</data>
       <data key="d3">175.0</data>
     </node>
     <node id="66">
-      <data key="d2">1.1481063742006436e-14</data>
+      <data key="d2">-9.950255243072243e-15</data>
       <data key="d3">187.5</data>
     </node>
     <node id="67">
-      <data key="d2">-12.49999999999999</data>
+      <data key="d2">-12.500000000000007</data>
       <data key="d3">175.0</data>
     </node>
     <node id="68">
-      <data key="d2">-24.999999999999993</data>
+      <data key="d2">-25.000000000000007</data>
       <data key="d3">162.5</data>
     </node>
     <node id="69">
-      <data key="d2">-37.499999999999986</data>
+      <data key="d2">-37.5</data>
       <data key="d3">150.0</data>
     </node>
     <node id="70">
-      <data key="d2">-24.99999999999999</data>
+      <data key="d2">-25.000000000000004</data>
       <data key="d3">137.5</data>
     </node>
     <node id="71">
@@ -353,7 +353,7 @@
     </node>
     <node id="86">
       <data key="d2">-75.00000000000001</data>
-      <data key="d3">50.000000000000014</data>
+      <data key="d3">50.00000000000002</data>
     </node>
     <node id="87">
       <data key="d2">-100.00000000000001</data>
@@ -365,15 +365,15 @@
     </node>
     <node id="89">
       <data key="d2">-75.00000000000001</data>
-      <data key="d3">37.500000000000014</data>
+      <data key="d3">37.50000000000002</data>
     </node>
     <node id="90">
       <data key="d2">-62.500000000000014</data>
-      <data key="d3">50.000000000000014</data>
+      <data key="d3">50.00000000000002</data>
     </node>
     <node id="91">
       <data key="d2">-75.00000000000001</data>
-      <data key="d3">62.500000000000014</data>
+      <data key="d3">62.50000000000002</data>
     </node>
     <node id="92">
       <data key="d2">-87.50000000000001</data>
@@ -413,7 +413,7 @@
     </node>
     <node id="101">
       <data key="d2">-137.5</data>
-      <data key="d3">25.000000000000007</data>
+      <data key="d3">25.00000000000001</data>
     </node>
     <node id="102">
       <data key="d2">-150.0</data>
@@ -656,15 +656,15 @@
       <data key="d5">100.0</data>
     </edge>
     <edge source="0" target="2">
-      <data key="d4">LINESTRING (0 0, 0 100)</data>
+      <data key="d4">LINESTRING (0 0, 6.123234e-15 100)</data>
       <data key="d5">100.0</data>
     </edge>
     <edge source="0" target="3">
-      <data key="d4">LINESTRING (0 0, -100 0)</data>
+      <data key="d4">LINESTRING (0 0, -100 1.224647e-14)</data>
       <data key="d5">100.0</data>
     </edge>
     <edge source="0" target="4">
-      <data key="d4">LINESTRING (0 0, 0 -100)</data>
+      <data key="d4">LINESTRING (0 0, -1.83697e-14 -100)</data>
       <data key="d5">100.0</data>
     </edge>
     <edge source="1" target="5">
@@ -680,39 +680,39 @@
       <data key="d5">50.0</data>
     </edge>
     <edge source="2" target="44">
-      <data key="d4">LINESTRING (0 100, 50 100)</data>
+      <data key="d4">LINESTRING (6.123234e-15 100, 50 100)</data>
       <data key="d5">50.0</data>
     </edge>
     <edge source="2" target="45">
-      <data key="d4">LINESTRING (0 100, 0 150)</data>
+      <data key="d4">LINESTRING (6.123234e-15 100, -3.061617e-15 150)</data>
       <data key="d5">50.0</data>
     </edge>
     <edge source="2" target="46">
-      <data key="d4">LINESTRING (0 100, -50 100)</data>
+      <data key="d4">LINESTRING (6.123234e-15 100, -50 100)</data>
       <data key="d5">50.0</data>
     </edge>
     <edge source="3" target="83">
-      <data key="d4">LINESTRING (-100 0, -100 50)</data>
+      <data key="d4">LINESTRING (-100 1.224647e-14, -100 50)</data>
       <data key="d5">50.0</data>
     </edge>
     <edge source="3" target="84">
-      <data key="d4">LINESTRING (-100 0, -150 0)</data>
+      <data key="d4">LINESTRING (-100 1.224647e-14, -150 6.123234e-15)</data>
       <data key="d5">50.0</data>
     </edge>
     <edge source="3" target="85">
-      <data key="d4">LINESTRING (-100 0, -100 -50)</data>
+      <data key="d4">LINESTRING (-100 1.224647e-14, -100 -50)</data>
       <data key="d5">50.0</data>
     </edge>
     <edge source="4" target="122">
-      <data key="d4">LINESTRING (0 -100, -50 -100)</data>
+      <data key="d4">LINESTRING (-1.83697e-14 -100, -50 -100)</data>
       <data key="d5">50.0</data>
     </edge>
     <edge source="4" target="123">
-      <data key="d4">LINESTRING (0 -100, 0 -150)</data>
+      <data key="d4">LINESTRING (-1.83697e-14 -100, -1.530808e-14 -150)</data>
       <data key="d5">50.0</data>
     </edge>
     <edge source="4" target="124">
-      <data key="d4">LINESTRING (0 -100, 50 -100)</data>
+      <data key="d4">LINESTRING (-1.83697e-14 -100, 50 -100)</data>
       <data key="d5">50.0</data>
     </edge>
     <edge source="5" target="8">
@@ -872,15 +872,15 @@
       <data key="d5">25.0</data>
     </edge>
     <edge source="45" target="59">
-      <data key="d4">LINESTRING (0 150, 25 150)</data>
+      <data key="d4">LINESTRING (-3.061617e-15 150, 25 150)</data>
       <data key="d5">25.0</data>
     </edge>
     <edge source="45" target="60">
-      <data key="d4">LINESTRING (0 150, 0 175)</data>
+      <data key="d4">LINESTRING (-3.061617e-15 150, -7.654042e-15 175)</data>
       <data key="d5">25.0</data>
     </edge>
     <edge source="45" target="61">
-      <data key="d4">LINESTRING (0 150, -25 150)</data>
+      <data key="d4">LINESTRING (-3.061617e-15 150, -25 150)</data>
       <data key="d5">25.0</data>
     </edge>
     <edge source="46" target="71">
@@ -925,7 +925,7 @@
     </edge>
     <edge source="49" target="57">
       <data key="d4">LINESTRING (50 125, 50 137.5)</data>
-      <data key="d5">12.5</data>
+      <data key="d5">12.499999999999986</data>
     </edge>
     <edge source="49" target="58">
       <data key="d4">LINESTRING (50 125, 37.5 125)</data>
@@ -944,15 +944,15 @@
       <data key="d5">12.5</data>
     </edge>
     <edge source="60" target="65">
-      <data key="d4">LINESTRING (0 175, 12.5 175)</data>
+      <data key="d4">LINESTRING (-7.654042e-15 175, 12.5 175)</data>
       <data key="d5">12.5</data>
     </edge>
     <edge source="60" target="66">
-      <data key="d4">LINESTRING (0 175, 0 187.5)</data>
+      <data key="d4">LINESTRING (-7.654042e-15 175, -9.950255e-15 187.5)</data>
       <data key="d5">12.5</data>
     </edge>
     <edge source="60" target="67">
-      <data key="d4">LINESTRING (0 175, -12.5 175)</data>
+      <data key="d4">LINESTRING (-7.654042e-15 175, -12.5 175)</data>
       <data key="d5">12.5</data>
     </edge>
     <edge source="61" target="68">
@@ -1016,15 +1016,15 @@
       <data key="d5">25.0</data>
     </edge>
     <edge source="84" target="98">
-      <data key="d4">LINESTRING (-150 0, -150 25)</data>
+      <data key="d4">LINESTRING (-150 6.123234e-15, -150 25)</data>
       <data key="d5">25.0</data>
     </edge>
     <edge source="84" target="99">
-      <data key="d4">LINESTRING (-150 0, -175 0)</data>
+      <data key="d4">LINESTRING (-150 6.123234e-15, -175 3.061617e-15)</data>
       <data key="d5">25.0</data>
     </edge>
     <edge source="84" target="100">
-      <data key="d4">LINESTRING (-150 0, -150 -25)</data>
+      <data key="d4">LINESTRING (-150 6.123234e-15, -150 -25)</data>
       <data key="d5">25.0</data>
     </edge>
     <edge source="85" target="110">
@@ -1088,15 +1088,15 @@
       <data key="d5">12.5</data>
     </edge>
     <edge source="99" target="104">
-      <data key="d4">LINESTRING (-175 0, -175 12.5)</data>
+      <data key="d4">LINESTRING (-175 3.061617e-15, -175 12.5)</data>
       <data key="d5">12.5</data>
     </edge>
     <edge source="99" target="105">
-      <data key="d4">LINESTRING (-175 0, -187.5 0)</data>
+      <data key="d4">LINESTRING (-175 3.061617e-15, -187.5 1.530808e-15)</data>
       <data key="d5">12.5</data>
     </edge>
     <edge source="99" target="106">
-      <data key="d4">LINESTRING (-175 0, -175 -12.5)</data>
+      <data key="d4">LINESTRING (-175 3.061617e-15, -175 -12.5)</data>
       <data key="d5">12.5</data>
     </edge>
     <edge source="100" target="107">
@@ -1160,15 +1160,15 @@
       <data key="d5">25.0</data>
     </edge>
     <edge source="123" target="137">
-      <data key="d4">LINESTRING (0 -150, -25 -150)</data>
+      <data key="d4">LINESTRING (-1.530808e-14 -150, -25 -150)</data>
       <data key="d5">25.0</data>
     </edge>
     <edge source="123" target="138">
-      <data key="d4">LINESTRING (0 -150, 0 -175)</data>
+      <data key="d4">LINESTRING (-1.530808e-14 -150, -1.377728e-14 -175)</data>
       <data key="d5">25.0</data>
     </edge>
     <edge source="123" target="139">
-      <data key="d4">LINESTRING (0 -150, 25 -150)</data>
+      <data key="d4">LINESTRING (-1.530808e-14 -150, 25 -150)</data>
       <data key="d5">25.0</data>
     </edge>
     <edge source="124" target="149">
@@ -1232,15 +1232,15 @@
       <data key="d5">12.5</data>
     </edge>
     <edge source="138" target="143">
-      <data key="d4">LINESTRING (0 -175, -12.5 -175)</data>
+      <data key="d4">LINESTRING (-1.377728e-14 -175, -12.5 -175)</data>
       <data key="d5">12.5</data>
     </edge>
     <edge source="138" target="144">
-      <data key="d4">LINESTRING (0 -175, 0 -187.5)</data>
+      <data key="d4">LINESTRING (-1.377728e-14 -175, -1.301187e-14 -187.5)</data>
       <data key="d5">12.5</data>
     </edge>
     <edge source="138" target="145">
-      <data key="d4">LINESTRING (0 -175, 12.5 -175)</data>
+      <data key="d4">LINESTRING (-1.377728e-14 -175, 12.5 -175)</data>
       <data key="d5">12.5</data>
     </edge>
     <edge source="139" target="146">

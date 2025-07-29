@@ -1,0 +1,38 @@
+[project]
+name = "UrbanToyGraph"
+version = "1.0.0"
+authors = [
+    { name = "Clément Sebastiao", email = "clse@itu.dk" },
+]
+maintainers = [{ name = "contributors" }]
+license = { text = "MIT License" }
+description = "Generator of stylized street networks."
+keywords = ["street network", "toy graph"]
+readme = { text = """\
+UrbanToyGraph is a generator of stylized street networks.
+The goal is to have quick and easy street networks created.
+It is built on top of `GeoPandas`_ and `networkX`_.
+
+.. _GeoPandas: http://geopandas.org
+.. _networkX : http://networkx.github.io
+""", content-type = "text/x-rst" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+requires-python = ">=3.13"
+dependencies = [
+    "geopandas>=1.1.1",
+    "numpy>=2.3.2",
+    "networkx>=3.5",
+    "shapely>=2.1.1",
+    "pytest>=8.4.1",
+    "pre-commit>=4.2.0",
+    "scipy>=1.16.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["utg", "utg.*"]

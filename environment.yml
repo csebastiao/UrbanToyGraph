@@ -2,10 +2,10 @@ name: utg
 channels:
   - conda-forge
 dependencies:
-  - geopandas=0.14.2
-  - numpy=1.26.3
-  - networkx=3.2.1
-  - shapely=2.0.2
-  - pytest=7.4.4
-  - pre-commit
-  - scipy=1.12.0
+  - geopandas>=1.1.1
+  - numpy>=2.3.2
+  - networkx>=3.5
+  - shapely>=2.1.1
+  - pytest>=8.4.1
+  - pre-commit>=4.2.0
+  - scipy>=1.16.0

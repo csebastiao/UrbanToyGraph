@@ -48,19 +48,19 @@
       <data key="d5">30.0</data>
     </edge>
     <edge source="0" target="2">
-      <data key="d4">LINESTRING (0 0, 0 30)</data>
+      <data key="d4">LINESTRING (0 0, 1.83697e-15 30)</data>
       <data key="d5">30.0</data>
     </edge>
     <edge source="0" target="3">
-      <data key="d4">LINESTRING (0 0, -30 0)</data>
+      <data key="d4">LINESTRING (0 0, -30 3.67394e-15)</data>
       <data key="d5">30.0</data>
     </edge>
     <edge source="0" target="4">
-      <data key="d4">LINESTRING (0 0, 0 -30)</data>
+      <data key="d4">LINESTRING (0 0, -5.510911e-15 -30)</data>
       <data key="d5">30.0</data>
     </edge>
     <edge source="1" target="2">
-      <data key="d4">LINESTRING (30 0, 0 30)</data>
+      <data key="d4">LINESTRING (30 0, 1.83697e-15 30)</data>
       <data key="d5">42.426406871192846</data>
     </edge>
     <edge source="1" target="5">
@@ -68,43 +68,43 @@
       <data key="d5">30.0</data>
     </edge>
     <edge source="1" target="4">
-      <data key="d4">LINESTRING (0 -30, 30 0)</data>
+      <data key="d4">LINESTRING (-5.510911e-15 -30, 30 0)</data>
       <data key="d5">42.42640687119286</data>
     </edge>
     <edge source="2" target="3">
-      <data key="d4">LINESTRING (0 30, -30 0)</data>
+      <data key="d4">LINESTRING (1.83697e-15 30, -30 3.67394e-15)</data>
       <data key="d5">42.42640687119285</data>
     </edge>
     <edge source="2" target="6">
-      <data key="d4">LINESTRING (0 30, 0 60)</data>
+      <data key="d4">LINESTRING (1.83697e-15 30, 3.67394e-15 60)</data>
       <data key="d5">30.0</data>
     </edge>
     <edge source="3" target="4">
-      <data key="d4">LINESTRING (-30 0, 0 -30)</data>
+      <data key="d4">LINESTRING (-30 3.67394e-15, -5.510911e-15 -30)</data>
       <data key="d5">42.426406871192846</data>
     </edge>
     <edge source="3" target="7">
-      <data key="d4">LINESTRING (-30 0, -60 0)</data>
+      <data key="d4">LINESTRING (-30 3.67394e-15, -60 7.347881e-15)</data>
       <data key="d5">30.0</data>
     </edge>
     <edge source="4" target="8">
-      <data key="d4">LINESTRING (0 -30, 0 -60)</data>
+      <data key="d4">LINESTRING (-5.510911e-15 -30, -1.102182e-14 -60)</data>
       <data key="d5">30.0</data>
     </edge>
     <edge source="5" target="6">
-      <data key="d4">LINESTRING (60 0, 0 60)</data>
+      <data key="d4">LINESTRING (60 0, 3.67394e-15 60)</data>
       <data key="d5">84.85281374238569</data>
     </edge>
     <edge source="5" target="8">
-      <data key="d4">LINESTRING (0 -60, 60 0)</data>
+      <data key="d4">LINESTRING (-1.102182e-14 -60, 60 0)</data>
       <data key="d5">84.85281374238572</data>
     </edge>
     <edge source="6" target="7">
-      <data key="d4">LINESTRING (0 60, -60 0)</data>
+      <data key="d4">LINESTRING (3.67394e-15 60, -60 7.347881e-15)</data>
       <data key="d5">84.8528137423857</data>
     </edge>
     <edge source="7" target="8">
-      <data key="d4">LINESTRING (-60 0, 0 -60)</data>
+      <data key="d4">LINESTRING (-60 7.347881e-15, -1.102182e-14 -60)</data>
       <data key="d5">84.85281374238569</data>
     </edge>
   </graph>

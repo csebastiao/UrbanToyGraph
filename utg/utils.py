@@ -9,21 +9,43 @@ import shapely
 import scipy.spatial as sp
 import networkx as nx
 
+__all__ = [
+    "make_osmnx_compatible",
+    "save_graph",
+    "load_graph",
+    "plot_graph",
+    "get_node_coord",
+]
+
 
 def make_osmnx_compatible(G):
-    """Make the graph osmnx-compatible."""
+    """
+    Make the graph osmnx-compatible.
+
+    Args:
+        G (networkx.Graph or networkx.MultiDiGraph): Graph generated from any .create_graph function that will be made osmnx compatible.
+
+    Returns:
+        networkx.MultiDiGraph: Graph G made osmnx compatible.
+    """
     G = G.copy()
     for c, edge in enumerate(G.edges):
         G.edges[edge]["osmid"] = c
     G.graph["crs"] = "epsg:2154"
     G.graph["simplified"] = True
-    if type(G) != nx.MultiDiGraph:
+    if not isinstance(G, nx.MultiDiGraph):
         G = nx.MultiDiGraph(G)
     return G
 
 
 def save_graph(G, filepath):
-    """Save the graph in the corresponding filepath, converting geometry to WKT string."""
+    """
+    Save the graph in the corresponding filepath, converting geometry to WKT string.
+
+    Args:
+        G (networkx.Graph or networkx.MultiDiGraph): Graph to be saved.
+        filepath (str): Path where the graph will be saved.
+    """
     G = G.copy()
     for e in G.edges:
         G.edges[e]["geometry"] = shapely.to_wkt(G.edges[e]["geometry"])
@@ -31,7 +53,15 @@ def save_graph(G, filepath):
 
 
 def load_graph(filepath):
-    """Load the graph from the corresponding filepath, creating geometry from WKT string."""
+    """
+    Load the graph from the corresponding filepath, creating geometry from WKT string.
+
+    Args:
+        filepath (str): Path locating the graph to be loaded.
+
+    Returns:
+        networkx.Graph or networkx.MultiDiGraph: Loaded graph.
+    """
     G = nx.read_graphml(filepath)
     G = nx.relabel_nodes(G, lambda x: int(x))
     for e in G.edges:
@@ -43,13 +73,21 @@ def plot_graph(
     G,
     square_bb=True,
     show_voronoi=False,
+    voronoi_color="firebrick",
+    voronoi_alpha=0.7,
     show=True,
     save=False,
     close=False,
     filepath=None,
     rel_buff=0.1,
+    edge_color="black",
+    node_color="black",
+    edge_linewidth=2,
+    node_size=20,
+    dpi=300,
 ):
-    """Plot the graph using geopandas plotting function, with the option to save the picture and see the Voronoi cells.
+    """
+    Plot the graph using geopandas plotting function, with the option to save the picture and see the Voronoi cells.
 
     Args:
         G (nx.Graph or nx.MultiDiGraph): Graph we want to plot.
@@ -68,8 +106,8 @@ def plot_graph(
     geom_edge = list(nx.get_edge_attributes(G, "geometry").values())
     gdf_node = gpd.GeoDataFrame(geometry=geom_node)
     gdf_edge = gpd.GeoDataFrame(geometry=geom_edge)
-    gdf_edge.plot(ax=ax, color="steelblue", zorder=1, linewidth=2)
-    gdf_node.plot(ax=ax, color="black", zorder=2)
+    gdf_edge.plot(ax=ax, color=edge_color, zorder=1, linewidth=edge_linewidth)
+    gdf_node.plot(ax=ax, color=node_color, zorder=2, markersize=node_size)
     ax.set_xticks([])
     ax.set_yticks([])
     bounds = gdf_node.total_bounds
@@ -96,13 +134,13 @@ def plot_graph(
         vor_cells = create_voronoi_polygons(bounded_vor)
         gdf_voronoi = gpd.GeoDataFrame(geometry=vor_cells)
         gdf_voronoi.geometry = gdf_voronoi.geometry.exterior
-        gdf_voronoi.plot(ax=ax, color="firebrick", alpha=0.7, zorder=0)
+        gdf_voronoi.plot(ax=ax, color=voronoi_color, alpha=voronoi_alpha, zorder=0)
     if show:
         plt.show()
     if save:
         if filepath is None:
             raise ValueError("If save is True, need to specify a filepath")
-        fig.savefig(filepath, dpi=300)
+        fig.savefig(filepath, dpi=dpi)
     if close:
         plt.close()
     return fig, ax
@@ -125,7 +163,17 @@ def normalize(vec):
 
 # TODO: Look at shapely voronoi to maybe make a change for better written code
 def bounded_voronoi(points, bb):
-    """Make bounded voronoi cells for points by creating a large square of artifical points far away."""
+    """
+    Make bounded voronoi cells for points by creating a large square of artifical points far away.
+
+    Args:
+        points (list): List of coordinates, as [[x1, y1], [x2, y2], ..., [xn, yn]].
+        bb (list): Bounding box constructed as [xmin, xmax, ymin, ymax]
+
+    Returns:
+        scipy.spatial.Voronoi: Voronoi cells created from the list of points, bounded by the bounding box.
+    """
+    # TODO add test to bb and points
     artificial_points = []
     # Make artifical points outside of the bounding box
     artificial_points.append([bb[0], bb[2]])
@@ -166,7 +214,16 @@ def bounded_voronoi(points, bb):
 
 
 def create_voronoi_polygons(vor, filtered=True):
-    """Create polygons from Voronoi regions. Use the filtered attributes from bounded_voronoi."""
+    """
+    Create polygons from Voronoi regions. Use the filtered attributes from bounded_voronoi.
+
+    Args:
+        vor (scipy.spatial.Voronoi): Voronoi cells.
+        filtered (bool, optional): If True, use filtered regions instead of the true regions. Defaults to True.
+
+    Returns:
+        list: List of shapely.Polygons corresponding to the Voronoi cells.
+    """
     vor_poly = []
     attr = vor.regions
     if filtered:

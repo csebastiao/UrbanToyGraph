@@ -12,10 +12,23 @@ import shapely
 from . import utils
 
 
+__all__ = [
+    "create_grid_graph",
+    "create_distorted_grid_graph",
+    "create_bridge_graph",
+    "create_radial_graph",
+    "create_concentric_graph",
+    "create_fractal_graph",
+    "add_random_edges",
+    "remove_random_edges",
+]
+
+
 def create_grid_graph(
     rows=3, cols=3, width=50, height=None, multidigraph=False, diagonal=False
 ):
-    """Create a grid graph of arbitrary size.
+    """
+    Create a grid graph of arbitrary size.
 
     Args:
         rows (int, optional): Number or rows. Defaults to 3.
@@ -91,10 +104,10 @@ def create_distorted_grid_graph(
     height=None,
     multidigraph=False,
     seed=None,
-    distribution="uniform",
     spacing=0.95,
 ):
-    """Create a distorted grid graph of arbitrary size.
+    """
+    Create a distorted grid graph of arbitrary size.
 
     Args:
         rows (int, optional): Number or rows. Defaults to 3.
@@ -102,7 +115,8 @@ def create_distorted_grid_graph(
         width (int or float, optional): Length in the x coordinate. If height is not defined, is the square's length. Defaults to 50.
         height (int or float, optional): If not None, length of the y coordinate. Defaults to None.
         multidigraph (bool, optional): If True, return Graph as MultiDiGraph. Graph is better for computations and ease of use, MultiDiGraph is more general and osmnx-compatible. Defaults to False.
-        diagonal (bool, optional): If True, create diagonal edges along the square. Works only if there is an equal amount of rows and columns. Defaults to False.
+        seed (int, optional): If given a value, will use it as the seed for the pseudo-random generator. Defaults to None.
+        spacing (float, optional): The maximum amount of displacement possible for each node, from 0% to 99%. Defaults to 0.95.
 
     Raises:
         ValueError: width needs to be positive.
@@ -122,6 +136,7 @@ def create_distorted_grid_graph(
     if not 0 < spacing <= 0.99:
         raise ValueError("Spacing needs to be between 0 and 0.99.")
     rng = np.random.default_rng(seed)
+    # TODO replace to use different distribution
     for node in G.nodes:
         x, y = node
         G.nodes[node]["x"] = x * width + rng.uniform(
@@ -150,6 +165,20 @@ def create_distorted_grid_graph(
 def create_bridge_graph(
     outrows=2, sscols=3, block_side=50, bridges=1, blength=150, multidigraph=False
 ):
+    """
+    Create a bridge graph.
+
+    Args:
+        outrows (int, optional): _description_. Defaults to 2.
+        sscols (int, optional): _description_. Defaults to 3.
+        block_side (int, optional): _description_. Defaults to 50.
+        bridges (int, optional): _description_. Defaults to 1.
+        blength (int, optional): _description_. Defaults to 150.
+        multidigraph (bool, optional): _description_. Defaults to False.
+
+    Returns:
+        _type_: _description_
+    """
     total_rows = outrows * (1 + bridges) + 1
     G = create_grid_graph(rows=total_rows, cols=sscols, width=block_side)
     H = nx.convert_node_labels_to_integers(G, first_label=len(G))
@@ -180,7 +209,8 @@ def create_bridge_graph(
 
 
 def create_radial_graph(radial=4, length=50, multidigraph=False):
-    """Create a radial graph where roads are radiating from a center.
+    """
+    Create a radial graph where roads are radiating from a center.
 
     Args:
         radial (int, optional): Number of roads arranged evenly around the center. Needs to be at least 2. Defaults to 4.
@@ -215,7 +245,8 @@ def create_radial_graph(radial=4, length=50, multidigraph=False):
 def create_concentric_graph(
     radial=8, zones=3, radius=30, straight_edges=False, center=True, multidigraph=False
 ):
-    """Create a concentric graph, where nodes are on circular zones, connected to their nearest neighbors and to the next zone.
+    """
+    Create a concentric graph, where nodes are on circular zones, connected to their nearest neighbors and to the next zone.
 
     Args:
         radial (int, optional): Number of nodes per zone. Nodes are evenly distributed on each circle. Needs to be at least 2. Defaults to 8.
@@ -274,11 +305,11 @@ def create_concentric_graph(
                 geom = shapely.LineString([fc, sc])
             else:
                 if j % radial == mod:
-                    geom = create_curved_linestring(
+                    geom = _create_curved_linestring(
                         sc, fc, radius * (i + 1), offset=2 * math.pi
                     )
                 else:
-                    geom = create_curved_linestring(fc, sc, radius * (i + 1))
+                    geom = _create_curved_linestring(fc, sc, radius * (i + 1))
             G.add_edge(
                 fn,
                 sn,
@@ -297,10 +328,11 @@ def create_concentric_graph(
 
 
 # Simpler but less general function in the meantime
-def create_curved_linestring(startpoint, endpoint, radius, offset=0):
-    """Create a curved linestring between the two selected points.
-
-    The curvature is given by the radius. The two points are supposed to be on a circle of the given radius. The offset allows to change the endpoint angle, to avoid issues of negative values and periodicity.
+def _create_curved_linestring(startpoint, endpoint, radius, offset=0):
+    """
+    Create a curved linestring between the two selected points. The curvature is given by the radius.
+    The two points are supposed to be on a circle of the given radius. The offset allows to change the endpoint
+    angle, to avoid issues of negative values and periodicity.
 
     Args:
         startpoint (array-like): coordinates of the first point
@@ -342,7 +374,8 @@ def create_fractal_graph(branch=4, level=3, inital_length=100, multidigraph=Fals
         branch (int, optional): Number of branch. Defaults to 4.
         level (int, optional): Levels of fractality. Defaults to 3.
         inital_length (int, optional): Length for the branches the first level of fractality. Defaults to 100.
-        multidigraph (bool, optional): If True, return Graph as MultiDiGraph. Graph is better for computations and ease of use, MultiDiGraph is more general and osmnx-compatible. Defaults to False.
+        multidigraph (bool, optional): If True, return Graph as MultiDiGraph. Graph is better for computations
+        and ease of use, MultiDiGraph is more general and osmnx-compatible. Defaults to False.
 
     Raises:
         ValueError: The level needs to be superior to 2.
@@ -370,7 +403,10 @@ def _recursive_fractal_level(G, nlist, length, branch, level):
         vector = list(G.edges(n, data=True))[0][-1]["geometry"].reverse().coords[:]
         new_center = vector[0]
         # Find initial angle and make it negative so we can use loop later to add new nodes
-        initial_angle = utils.find_angle(vector) - 2 * np.pi
+        initial_angle = (
+            math.atan2(vector[1][1] - vector[0][1], vector[1][0] - vector[0][0])
+            - 2 * np.pi
+        )
         count = len(G)
         new_nlist = []
         for i in range(1, branch):
@@ -394,7 +430,8 @@ def _recursive_fractal_level(G, nlist, length, branch, level):
 def add_random_edges(G, N=1, is_directed=True):
     """Add N random edges between existing nodes.
 
-    As we are using spatial networks, edges can't cross each other, meaning that we need to find nodes that can see eachother. One way to do so is by finding the Voronoi cells of each nodes. Intersecting voronoi cells means that an edge can exist between two nodes.
+    As we are using spatial networks, edges can't cross each other, meaning that we need to find nodes that can see eachother.
+    One way to do so is by finding the Voronoi cells of each nodes. Intersecting voronoi cells means that an edge can exist between two nodes.
     Can only assure of good behavior if edges are always straight. For instance for concentric graph, need to specify straight_edges=True.
 
     Args:

@@ -1,13 +1,13 @@
 # UrbanToyGraph
 
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![GitHub License](https://img.shields.io/github/license/csebastiao/UrbanToyGraph)](https://github.com/csebastiao/UrbanToyGraph/blob/main/LICENSE)
 
 Toy graph to play with network metrics and algorithms mimicking typical urban patterns. The actual templates that can be modified by removing edges (and isolated nodes) are:
 
 - Grid graph: A grid of m columns and n nodes. Can select a different width and height.
+- Distorted grid graph: A grid graph where every node is randomly slighlty displaced while keeping planarity.
 - Bridge graph: Two grids connected by a smaller number of edges.
 - Radial graph: Roads coming from a central node in a star-shaped structure. Can select the number of radial roads that will be evenly distributed around the central node.
 - Concentric graph: Nodes that are on connected circles. Can choose the number of radial roads and of circles (called zones). Can choose to put a central node connected to the first circle.
