@@ -42,22 +42,20 @@ def create_grid_graph(
         ValueError: width needs to be positive.
 
     Returns:
-        G (networkx.Graph or networkx.MultiDiGraph): Grid-like graph.
+        networkx.Graph or networkx.MultiDiGraph: Grid-like graph.
     """
     G = nx.grid_2d_graph(cols, rows, create_using=nx.Graph)
-    if width <= 0:
-        raise ValueError("Width needs to be positive.")
     if height is None:
         height = width
     else:
         warnings.warn(
-            "Height value selected, if different than width, will create rectangles instead of squares."
+            "Height value selected, if different than width (defaults to 50), will create rectangles instead of squares."
         )
     for node in G.nodes:
         x, y = node
         G.nodes[node]["x"] = x * width
         G.nodes[node]["y"] = y * height
-        for c, edge in enumerate(list(G.edges(node))):
+        for edge in list(G.edges(node)):
             first, second = edge
             fx, fy = first
             sx, sy = second
@@ -122,16 +120,14 @@ def create_distorted_grid_graph(
         ValueError: width needs to be positive.
 
     Returns:
-        G (networkx.Graph or networkx.MultiDiGraph): Grid-like graph.
+        networkx.Graph or networkx.MultiDiGraph: Grid-like graph.
     """
     G = nx.grid_2d_graph(cols, rows, create_using=nx.Graph)
-    if width <= 0:
-        raise ValueError("Width needs to be positive.")
     if height is None:
         height = width
     else:
         warnings.warn(
-            "Height value selected, if different than width, will create rectangles instead of squares."
+            "Height value selected, if different than width (defaults to 50), will create rectangles instead of squares."
         )
     if not 0 < spacing <= 0.99:
         raise ValueError("Spacing needs to be between 0 and 0.99.")
@@ -169,15 +165,15 @@ def create_bridge_graph(
     Create a bridge graph.
 
     Args:
-        outrows (int, optional): _description_. Defaults to 2.
-        sscols (int, optional): _description_. Defaults to 3.
-        block_side (int, optional): _description_. Defaults to 50.
-        bridges (int, optional): _description_. Defaults to 1.
-        blength (int, optional): _description_. Defaults to 150.
-        multidigraph (bool, optional): _description_. Defaults to False.
+        outrows (int, optional): Number of rows between and around bridge(s). Defaults to 2.
+        sscols (int, optional): Number of nodes in columns on each side of the bridge(s). Defaults to 3.
+        block_side (int, optional): Length of each edge outside of bridge(s). Defaults to 50.
+        bridges (int, optional): Number of bridges. Defaults to 1.
+        blength (int, optional): Length of the bridge(s). Defaults to 150.
+        multidigraph (bool, optional): If True, return Graph as MultiDiGraph. Graph is better for computations and ease of use, MultiDiGraph is more general and osmnx-compatible. Defaults to False.
 
     Returns:
-        _type_: _description_
+        networkx.Graph or networkx.MultiDiGraph: Grid-like graph.
     """
     total_rows = outrows * (1 + bridges) + 1
     G = create_grid_graph(rows=total_rows, cols=sscols, width=block_side)
@@ -221,7 +217,7 @@ def create_radial_graph(radial=4, length=50, multidigraph=False):
         ValueError: Radial graph needs at least 3 radial roads to work.
 
     Returns:
-        G (networkx.Graph or networkx.MultiDiGraph): Radial graph.
+        networkx.Graph or networkx.MultiDiGraph: Radial graph.
     """
     if radial < 3:
         raise ValueError("Radial graph needs at least 3 radial roads to work.")
@@ -260,7 +256,7 @@ def create_concentric_graph(
         ValueError: Needs one zone at least.
 
     Returns:
-        G (networkx.Graph or networkx.MultiDiGraph): Concentric graph.
+        networkx.Graph or networkx.MultiDiGraph: Concentric graph.
     """
     if radial < 2:
         raise ValueError("Concentric graph needs at least 2 radial positions to work.")
@@ -381,7 +377,7 @@ def create_fractal_graph(branch=4, level=3, inital_length=100, multidigraph=Fals
         ValueError: The level needs to be superior to 2.
 
     Returns:
-        G (networkx.Graph or networkx.MultiDiGraph): Fractal graph.
+        networkx.Graph or networkx.MultiDiGraph: Fractal graph.
     """
     # First level is radial graph
     G = create_radial_graph(radial=branch, length=inital_length, multidigraph=False)
@@ -427,7 +423,10 @@ def _recursive_fractal_level(G, nlist, length, branch, level):
             _recursive_fractal_level(G, new_nlist, length / 2, branch, level - 1)
 
 
-def add_random_edges(G, N=1, is_directed=True):
+# TODO add seeding
+# TODO add error for maximum number of edges from maximal planar graph
+# TODO not all possible edges to add are added by Voronoi cells, need more general method
+def add_random_edges(G, N=1):
     """Add N random edges between existing nodes.
 
     As we are using spatial networks, edges can't cross each other, meaning that we need to find nodes that can see eachother.
@@ -435,15 +434,14 @@ def add_random_edges(G, N=1, is_directed=True):
     Can only assure of good behavior if edges are always straight. For instance for concentric graph, need to specify straight_edges=True.
 
     Args:
-        G (networkc.Graph or neworkx.MultiDiGraph): Graph on which we want to remove edges.
+        G (networkx.Graph or neworkx.MultiDiGraph): Graph on which we want to remove edges.
         N (int, optional): Number of edges we want to add. Defaults to 1.
-        is_directed (bool, optional): Need to be True if the graph is directed. Defaults to True.
 
     Returns:
-        _type_: _description_
+        networkx.Graph or networkx.MultiDiGraph: Graph G with edges added.
     """
     G = G.copy()
-    if is_directed is True:
+    if isinstance(G, nx.MultiDiGraph):
         G = nx.MultiGraph(G)
     pos_list = [utils.get_node_coord(G, n) for n in G.nodes]
     xmin, ymin = np.min(pos_list, axis=0)
@@ -471,16 +469,12 @@ def add_random_edges(G, N=1, is_directed=True):
         # Sampling without replacement
         u, v = random.sample(list(G.nodes), 2)
         # If edges not already connected, look if their Voronoi Cells intersects
-        if is_directed:
+        if isinstance(G, nx.MultiGraph):
             tested = [u, v, 0]
         else:
             tested = [u, v]
-        # See if there is already an edge between the two nodes by trying to call it
-        try:
-            G.edges[tested]["geometry"] = G.edges[tested]["geometry"]
-        except KeyError:
-            pass
-        else:
+        # See if there is already an edge between the two nodes
+        if G.has_edge(tested):
             valid = False
         u_vor = gdf.loc[u, "voronoi"]
         v_vor = gdf.loc[v, "voronoi"]
@@ -504,33 +498,31 @@ def add_random_edges(G, N=1, is_directed=True):
                 "1000 consecutive random trials without finding an edge to add, verify that there are edges that can be added before retrying."
             )
             break
-    if is_directed is True:
+    if isinstance(G, nx.MultiGraph):
         return nx.MultiDiGraph(G)
     return G
 
 
-def remove_random_edges(
-    G, N=1, keep_all_nodes=True, prevent_disconnect=True, is_directed=True
-):
+# TODO add seed to make it reproducible
+def remove_random_edges(G, N=1, keep_all_nodes=True, prevent_disconnect=True):
     """Remove random edges from a graph.
 
     Args:
-        G (networkc.Graph or neworkx.MultiDiGraph): Graph on which we want to remove edges.
+        G (networkx.Graph or neworkx.MultiDiGraph): Graph on which we want to remove edges.
         N (int, optional): Number of edges we want to remove. Defaults to 1.
         prevent_disconnect (bool, optional): If True, will keep the network as connected as it was initially. Defaults to True.
-        is_directed (bool, optional): Need to be True if the graph is directed. Defaults to True.
 
     Raises:
         ValueError: N is too large for the graph, pick a smaller N.
 
     Returns:
-        G (networkx.MultiDiGraph): Graph with edges removed.
+        networkx.Graph or networkx.MultiDiGraph: Graph G with edges removed.
     """
     removed = 0
     # Avoid mutate original graph
     G = G.copy()
     # Make it undirected to avoid needing to remove two edges and to use the nx.number_connected_components function
-    if is_directed is True:
+    if isinstance(G, nx.MultiDiGraph):
         G = nx.MultiGraph(G)
     edgelist = list(G.edges)
     if keep_all_nodes:
@@ -567,6 +559,6 @@ def remove_random_edges(
             G = H
             edgelist = list(G.edges)
             removed += 1
-    if is_directed:
+    if isinstance(G, nx.MultiGraph):
         G = nx.MultiDiGraph(G)
     return G

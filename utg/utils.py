@@ -165,7 +165,7 @@ def plot_graph(
 
 def make_true_zero(vec):
     """Round to zero when values are very close to zero in a list."""
-    return [round(val) if math.isclose(val, 0, abs_tol=1e-10) else val for val in vec]
+    return [round(val) if math.isclose(val, 0, abs_tol=1e-6) else val for val in vec]
 
 
 def get_node_coord(G, n):
