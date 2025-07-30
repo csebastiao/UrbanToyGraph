@@ -49,7 +49,8 @@ def create_grid_graph(
         height = width
     else:
         warnings.warn(
-            "Height value selected, if different than width (defaults to 50), will create rectangles instead of squares."
+            "Height value selected, if different than width (defaults to 50), will create rectangles instead of squares.",
+            category=UserWarning,
         )
     for node in G.nodes:
         x, y = node
@@ -474,7 +475,7 @@ def add_random_edges(G, N=1):
         else:
             tested = [u, v]
         # See if there is already an edge between the two nodes
-        if G.has_edge(tested):
+        if G.has_edge(*tested):
             valid = False
         u_vor = gdf.loc[u, "voronoi"]
         v_vor = gdf.loc[v, "voronoi"]

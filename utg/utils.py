@@ -179,6 +179,7 @@ def normalize(vec):
 
 
 # TODO: Look at shapely voronoi to maybe make a change for better written code
+# TODO: Verify code
 def bounded_voronoi(points, bb):
     """
     Make bounded voronoi cells for points by creating a large square of artifical points far away.
@@ -230,6 +231,7 @@ def bounded_voronoi(points, bb):
     return vor
 
 
+# TODO: Redo but instead start from voronoi, and do intersection with bounding box to avoid curved shapes
 def create_voronoi_polygons(vor, filtered=True):
     """
     Create polygons from Voronoi regions. Use the filtered attributes from bounded_voronoi.
