@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "UrbanToyGraph"
 version = "1.0.0"
@@ -18,7 +22,7 @@ It is built on top of `GeoPandas`_ and `networkX`_.
 """, content-type = "text/x-rst" }
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: BSD License",
+    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: GIS",
@@ -33,6 +37,9 @@ dependencies = [
     "pre-commit>=4.2.0",
     "scipy>=1.16.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/csebastiao/UrbanToyGraph"
 
 [tool.setuptools.packages.find]
 include = ["utg", "utg.*"]
