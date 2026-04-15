@@ -143,3 +143,14 @@ if __name__ == "__main__":
         close=True,
         filepath="./demo/template_graph/" + graphname + ".png",
     )
+    graphname = "varying_density_grid"
+    G = utg.create_varying_density_grid_graph(layers=3, size=3, initial_distance=50, seed=59)
+    utg.save_graph(G, "./demo/template_graph/" + graphname + ".graphml")
+    utg.plot_graph(
+        G,
+        show=False,
+        save=True,
+        close=True,
+        filepath="./demo/template_graph/" + graphname + ".png",
+    )
+
