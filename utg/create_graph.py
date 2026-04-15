@@ -19,6 +19,7 @@ __all__ = [
     "create_radial_graph",
     "create_concentric_graph",
     "create_fractal_graph",
+    "create_varying_density_grid_graph",
     "add_random_edges",
     "remove_random_edges",
 ]
@@ -562,4 +563,109 @@ def remove_random_edges(G, N=1, keep_all_nodes=True, prevent_disconnect=True):
             removed += 1
     if isinstance(G, nx.MultiGraph):
         G = nx.MultiDiGraph(G)
+    return G
+
+
+def create_varying_density_grid_graph(
+    layers=3, size=3, initial_distance=50, multidigraph=False, seed=None
+):
+    """
+    Create a varying density grid graph with hierarchical layers.
+
+    Each layer is a finer grid nested within the cells of the previous layer,
+    creating a multi-scale urban-like network with varying density.
+
+    Args:
+        layers (int, optional): Number of hierarchical levels. Defaults to 3.
+        size (int, optional): Number of cells per side in each layer. Defaults to 3.
+        initial_distance (int or float, optional): Cell spacing in the coarsest layer. Defaults to 50.
+        multidigraph (bool, optional): If True, return Graph as MultiDiGraph. Defaults to False.
+        seed (int, optional): Random seed for reproducibility. Defaults to None.
+
+    Returns:
+        networkx.Graph or networkx.MultiDiGraph: Varying density grid graph with hierarchical structure.
+    """
+    if seed is not None:
+        np.random.seed(seed)
+    
+    G = nx.Graph()
+    node_id = 0
+    node_coords = {}  # Map to track node coordinates to their IDs
+    
+    # Calculate deltas for each layer: size^(layers-k) * initial_distance
+    deltas = [size ** (layers - k - 1) * initial_distance for k in range(layers)]
+    
+    # Keep track of x0 positions for each layer to position subsequent layers
+    x0_positions = []
+    
+    for layer_idx in range(layers):
+        delta = deltas[layer_idx]
+        
+        # Determine x0 (starting x coordinate for this layer)
+        if layer_idx == 0:
+            x0 = 0
+        else:
+            # Sample random x0 within the cells of the previous layer
+            prev_delta = deltas[layer_idx - 1]
+            prev_x0 = x0_positions[layer_idx - 1]
+            x0_candidates = [
+                prev_x0 + j * prev_delta for j in range(size)
+            ]
+            x0 = np.random.choice(x0_candidates)
+        
+        x0_positions.append(x0)
+        
+        # Create grid node coordinates for this layer
+        # Grid spans from x0 to x0 + size*delta
+        x_coords = [x0 + i * delta for i in range(size + 1)]
+        y_coords = [x0 + i * delta for i in range(size + 1)]
+        
+        # Add nodes and edges for horizontal lines
+        for y in y_coords:
+            for i in range(size):
+                start_coord = (round(x_coords[i], 10), round(y, 10))
+                end_coord = (round(x_coords[i + 1], 10), round(y, 10))
+                
+                # Add nodes if not already present
+                for coord in [start_coord, end_coord]:
+                    if coord not in node_coords:
+                        node_coords[coord] = node_id
+                        G.add_node(node_id, x=coord[0], y=coord[1])
+                        node_id += 1
+                
+                # Add edge between these nodes
+                u, v = node_coords[start_coord], node_coords[end_coord]
+                if not G.has_edge(u, v):
+                    G.add_edge(
+                        u,
+                        v,
+                        geometry=shapely.LineString([start_coord, end_coord]),
+                        length=delta,
+                    )
+        
+        # Add nodes and edges for vertical lines
+        for x in x_coords:
+            for j in range(size):
+                start_coord = (round(x, 10), round(y_coords[j], 10))
+                end_coord = (round(x, 10), round(y_coords[j + 1], 10))
+                
+                # Add nodes if not already present
+                for coord in [start_coord, end_coord]:
+                    if coord not in node_coords:
+                        node_coords[coord] = node_id
+                        G.add_node(node_id, x=coord[0], y=coord[1])
+                        node_id += 1
+                
+                # Add edge between these nodes
+                u, v = node_coords[start_coord], node_coords[end_coord]
+                if not G.has_edge(u, v):
+                    G.add_edge(
+                        u,
+                        v,
+                        geometry=shapely.LineString([start_coord, end_coord]),
+                        length=delta,
+                    )
+    
+    if multidigraph:
+        return nx.MultiDiGraph(G)
     return G

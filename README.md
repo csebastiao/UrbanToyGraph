@@ -12,6 +12,7 @@ Toy graph to play with network metrics and algorithms mimicking typical urban pa
 - Radial graph: Roads coming from a central node in a star-shaped structure. Can select the number of radial roads that will be evenly distributed around the central node.
 - Concentric graph: Nodes that are on connected circles. Can choose the number of radial roads and of circles (called zones). Can choose to put a central node connected to the first circle.
 - Fractal graph: Roads coming from a central node and branching in a fractal way. Can select the number of branches and the level of fractality desired.
+- Varying density graph: An arrangement of squared grids randomly nested. Can select the number of edges, the level of nests desired and seed for reproducibility.
 
 ## Installation
 
