@@ -587,20 +587,20 @@ def create_varying_density_grid_graph(
     """
     if seed is not None:
         np.random.seed(seed)
-    
+
     G = nx.Graph()
     node_id = 0
     node_coords = {}  # Map to track node coordinates to their IDs
-    
+
     # Calculate deltas for each layer: size^(layers-k) * initial_distance
     deltas = [size ** (layers - k - 1) * initial_distance for k in range(layers)]
-    
+
     # Keep track of x0 positions for each layer to position subsequent layers
     x0_positions = []
-    
+
     for layer_idx in range(layers):
         delta = deltas[layer_idx]
-        
+
         # Determine x0 (starting x coordinate for this layer)
         if layer_idx == 0:
             x0 = 0
@@ -608,31 +608,29 @@ def create_varying_density_grid_graph(
             # Sample random x0 within the cells of the previous layer
             prev_delta = deltas[layer_idx - 1]
             prev_x0 = x0_positions[layer_idx - 1]
-            x0_candidates = [
-                prev_x0 + j * prev_delta for j in range(size)
-            ]
+            x0_candidates = [prev_x0 + j * prev_delta for j in range(size)]
             x0 = np.random.choice(x0_candidates)
-        
+
         x0_positions.append(x0)
-        
+
         # Create grid node coordinates for this layer
         # Grid spans from x0 to x0 + size*delta
         x_coords = [x0 + i * delta for i in range(size + 1)]
         y_coords = [x0 + i * delta for i in range(size + 1)]
-        
+
         # Add nodes and edges for horizontal lines
         for y in y_coords:
             for i in range(size):
                 start_coord = (round(x_coords[i], 10), round(y, 10))
                 end_coord = (round(x_coords[i + 1], 10), round(y, 10))
-                
+
                 # Add nodes if not already present
                 for coord in [start_coord, end_coord]:
                     if coord not in node_coords:
                         node_coords[coord] = node_id
                         G.add_node(node_id, x=coord[0], y=coord[1])
                         node_id += 1
-                
+
                 # Add edge between these nodes
                 u, v = node_coords[start_coord], node_coords[end_coord]
                 if not G.has_edge(u, v):
@@ -642,20 +640,20 @@ def create_varying_density_grid_graph(
                         geometry=shapely.LineString([start_coord, end_coord]),
                         length=delta,
                     )
-        
+
         # Add nodes and edges for vertical lines
         for x in x_coords:
             for j in range(size):
                 start_coord = (round(x, 10), round(y_coords[j], 10))
                 end_coord = (round(x, 10), round(y_coords[j + 1], 10))
-                
+
                 # Add nodes if not already present
                 for coord in [start_coord, end_coord]:
                     if coord not in node_coords:
                         node_coords[coord] = node_id
                         G.add_node(node_id, x=coord[0], y=coord[1])
                         node_id += 1
-                
+
                 # Add edge between these nodes
                 u, v = node_coords[start_coord], node_coords[end_coord]
                 if not G.has_edge(u, v):
@@ -665,7 +663,35 @@ def create_varying_density_grid_graph(
                         geometry=shapely.LineString([start_coord, end_coord]),
                         length=delta,
                     )
-    
+
+    # Remove edges that contain other edges (keep shorter edges)
+    # This mimics the R code: check_discard <- st_contains(grid,grid) |> vapply(\(x) length(x)==1,logical(1))
+    edges_to_keep = []
+    edge_list = list(G.edges(data=True))
+
+    for i, (u, v, data_i) in enumerate(edge_list):
+        geom_i = data_i["geometry"]
+        # Count how many edges this edge contains
+        contained_count = 0
+
+        for j, (u2, v2, data_j) in enumerate(edge_list):
+            geom_j = data_j["geometry"]
+            # Check if edge i contains edge j
+            if geom_i.contains(geom_j):
+                contained_count += 1
+
+        # Keep edge only if it contains only itself (no other edges)
+        if contained_count == 1:
+            edges_to_keep.append((u, v))
+
+    # Remove edges not in the keep list
+    edges_to_remove = [(u, v) for u, v in G.edges() if (u, v) not in edges_to_keep]
+    G.remove_edges_from(edges_to_remove)
+
+    # Remove isolated nodes that might have been left after edge removal
+    nodes_to_remove = [n for n in G.nodes() if G.degree(n) == 0]
+    G.remove_nodes_from(nodes_to_remove)
+
     if multidigraph:
         return nx.MultiDiGraph(G)
     return G

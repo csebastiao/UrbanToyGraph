@@ -203,22 +203,6 @@
       <data key="d4">LINESTRING (0 450, 0 900)</data>
       <data key="d5">450</data>
     </edge>
-    <edge source="5" target="6">
-      <data key="d4">LINESTRING (450 450, 900 450)</data>
-      <data key="d5">450</data>
-    </edge>
-    <edge source="5" target="9">
-      <data key="d4">LINESTRING (450 450, 450 900)</data>
-      <data key="d5">450</data>
-    </edge>
-    <edge source="5" target="16">
-      <data key="d4">LINESTRING (450 450, 600 450)</data>
-      <data key="d5">150</data>
-    </edge>
-    <edge source="5" target="18">
-      <data key="d4">LINESTRING (450 450, 450 600)</data>
-      <data key="d5">150</data>
-    </edge>
     <edge source="5" target="28">
       <data key="d4">LINESTRING (450 450, 500 450)</data>
       <data key="d5">50</data>
@@ -229,10 +213,6 @@
     </edge>
     <edge source="6" target="7">
       <data key="d4">LINESTRING (900 450, 1350 450)</data>
-      <data key="d5">450</data>
-    </edge>
-    <edge source="6" target="10">
-      <data key="d4">LINESTRING (900 450, 900 900)</data>
       <data key="d5">450</data>
     </edge>
     <edge source="6" target="17">
@@ -253,10 +233,6 @@
     </edge>
     <edge source="8" target="12">
       <data key="d4">LINESTRING (0 900, 0 1350)</data>
-      <data key="d5">450</data>
-    </edge>
-    <edge source="9" target="10">
-      <data key="d4">LINESTRING (450 900, 900 900)</data>
       <data key="d5">450</data>
     </edge>
     <edge source="9" target="13">
@@ -307,10 +283,6 @@
       <data key="d4">LINESTRING (600 450, 750 450)</data>
       <data key="d5">150</data>
     </edge>
-    <edge source="16" target="19">
-      <data key="d4">LINESTRING (600 450, 600 600)</data>
-      <data key="d5">150</data>
-    </edge>
     <edge source="16" target="29">
       <data key="d4">LINESTRING (550 450, 600 450)</data>
       <data key="d5">50</data>
@@ -321,10 +293,6 @@
     </edge>
     <edge source="17" target="20">
       <data key="d4">LINESTRING (750 450, 750 600)</data>
-      <data key="d5">150</data>
-    </edge>
-    <edge source="18" target="19">
-      <data key="d4">LINESTRING (450 600, 600 600)</data>
       <data key="d5">150</data>
     </edge>
     <edge source="18" target="22">
